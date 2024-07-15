@@ -1,0 +1,32 @@
+[
+  {
+    "eventName": "CodeFest 2024",
+    "organizer": "Tech Innovators",
+    "date": "2024-08-15"
+  },
+  {
+    "eventName": "Hack the Future",
+    "organizer": "Future Coders",
+    "date": "2024-09-10"
+  },
+  {
+    "eventName": "Innovate Hackathon",
+    "organizer": "Innovate Labs",
+    "date": "2024-10-05"
+  },
+  {
+    "eventName": "CodeSprint",
+    "organizer": "DevCommunity",
+    "date": "2024-11-20"
+  },
+  {
+    "eventName": "Techathon 2024",
+    "organizer": "Tech World",
+    "date": "2024-12-01"
+  },
+  {
+    "eventName": "Hack for Good",
+    "organizer": "Charity Coders",
+    "date": "2024-07-22"
+  }
+]

@@ -6,6 +6,14 @@ export async function POST(request) {
   console.log(role);
   await connectMongoDB();
 
-  await User.create({ name, email, role });
-  return NextResponse.json({ message: "User registered" }, { status: 201 });
+  const userExist = User.findOne({ email, role });
+  if (!userExist) {
+    await User.create({ name, email, role });
+    return NextResponse.json({ message: "User registered" }, { status: 201 });
+  } else {
+    return NextResponse.json(
+      { message: "User already exists" },
+      { status: 201 }
+    );
+  }
 }

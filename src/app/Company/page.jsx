@@ -15,11 +15,13 @@ async function page() {
   return (
     <div>
       {session?.user?.role == "Google User" ? (
-        <div>
-          <h1>Create event!</h1>
+        <div className=" text-center">
+          <h1 className=" text-8xl">Create event!</h1>
         </div>
       ) : (
-        <div>Login with google to host a event</div>
+        <div className=" text-center text-8xl">
+          Login with google to host a event
+        </div>
       )}
     </div>
   );

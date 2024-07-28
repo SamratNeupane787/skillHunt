@@ -15,11 +15,13 @@ async function page() {
     <div>
       {session?.user?.role === "Github User" ? (
         <div>
-          <h1>Ready to join event</h1>
+          <h1 className=" text-center text-8xl">Ready to join event</h1>
         </div>
       ) : (
         <div>
-          <h1>You must be logged in with Github to Join event!</h1>
+          <h1 className=" text-center text-8xl">
+            You must be logged in with Github to Join event!
+          </h1>
         </div>
       )}
     </div>

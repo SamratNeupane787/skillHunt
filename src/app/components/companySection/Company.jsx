@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import { CiSearch } from "react-icons/ci";
-
+import Link from "next/link";
 function Student() {
   return (
     <div className=" py-8">
@@ -17,8 +17,8 @@ function Student() {
             1) Signup <br /> 2) List Event <br />
             3) And Done!
           </p>
-          <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full  w-36 mt-7 ">
-            Host
+          <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full  w-36 mt-7 sm:text-xl md:text-2xl ">
+            <Link href="/Student">Host</Link>
           </button>
         </div>
         <div>

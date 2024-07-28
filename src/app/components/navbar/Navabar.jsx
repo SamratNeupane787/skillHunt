@@ -2,10 +2,11 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-
-const Navbar = () => {
+import { getServerSession } from "next-auth";
+import { options } from "../../api/auth/[...nextauth]/options";
+const Navbar = async () => {
   const [open, setOpen] = useState(false);
-
+  const session = await getServerSession(options);
   const toggleMenu = () => {
     setOpen(!open);
   };
@@ -23,15 +24,20 @@ const Navbar = () => {
           <Link href="/" className="hover:text-[#1877F2] gap-2">
             Home
           </Link>
-          <Link href="/contact" className="hover:text-[#1877F2] gap-2">
+          <Link href="/Find" className="hover:text-[#1877F2] gap-2">
             Hackathon
           </Link>
-          <Link href="/about" className="hover:text-[#1877F2] gap-2">
+          <Link href="/Company" className="hover:text-[#1877F2] gap-2">
             Company
           </Link>
           <Link href="/about" className="hover:text-[#1877F2] gap-2">
             Contact Us
           </Link>
+          {session ? (
+            <Link href="/api/auth/signout?callbackUrl=/">Logout</Link>
+          ) : (
+            <Link href="/">About Us</Link>
+          )}
         </div>
         <div className="md:hidden">
           <Image

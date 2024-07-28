@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import { CiSearch } from "react-icons/ci";
-
+import Link from "next/link";
 function Student() {
   return (
     <div className=" py-8">
@@ -12,7 +12,7 @@ function Student() {
         <div>
           <Image src="/coding.png" height={520} width={520} />
         </div>
-        <div className="sm:text-5xl md:text-5xl">
+        <div className="sm:text-5xl md:text-6xl">
           <h1 className="font-semibold font-mono text-[#5480ba] sm:text-3xl md:text-5xl  ">
             Compete and Win!
           </h1>
@@ -24,8 +24,8 @@ function Student() {
             <span className="py-4">3) Win the Prize!</span>
             <br />
           </p>
-          <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full  w-36 mt-7 ">
-            Find
+          <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full  w-36 mt-7 sm:text-xl md:text-2xl ">
+            <Link href="/Student">Find</Link>
           </button>
         </div>
       </div>

@@ -47,12 +47,12 @@ export const options = {
       if (!session) {
         console.log("Pls login");
       }
-      const { name, email, role } = session?.user;
+      const { name, email, role, image } = session?.user;
       console.log(session?.user);
       try {
         await connectMongoDB();
 
-        const res = await fetch("http:localhost:3000/api/user", {
+        var res = await fetch("http:localhost:3000/api/user", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -61,6 +61,7 @@ export const options = {
             name,
             email,
             role,
+            image,
           }),
         });
         if (res.ok) {

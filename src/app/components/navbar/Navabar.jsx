@@ -1,12 +1,22 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { options } from "../../api/auth/[...nextauth]/options";
-const Navbar = async () => {
+
+const Navbar = () => {
   const [open, setOpen] = useState(false);
-  const session = await getServerSession(options);
+  const [session, setSession] = useState(null);
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      const data = await getServerSession(options);
+      setSession(data);
+    };
+    fetchSession();
+  }, []);
+
   const toggleMenu = () => {
     setOpen(!open);
   };
@@ -56,18 +66,10 @@ const Navbar = async () => {
             <Link href="/" className="hover:text-gray-800" onClick={toggleMenu}>
               Homepage
             </Link>
-            <Link
-              href="/contact"
-              className="hover:text-gray-800"
-              onClick={toggleMenu}
-            >
+            <Link href="/contact" className="hover:text-gray-800">
               Contact
             </Link>
-            <Link
-              href="/about"
-              className="hover:text-gray-800"
-              onClick={toggleMenu}
-            >
+            <Link href="/about" className="hover:text-gray-800">
               About
             </Link>
           </div>

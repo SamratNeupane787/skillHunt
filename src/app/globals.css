@@ -3,3 +3,6 @@
 @tailwind utilities;
 
 
+input:placeholder{
+    text-align:  center;
+}

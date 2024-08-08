@@ -4,18 +4,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { options } from "../../api/auth/[...nextauth]/options";
+import { useSession } from "next-auth/react";
 
 const Navbar = () => {
+  const { data: session } = useSession();
   const [open, setOpen] = useState(false);
-  const [session, setSession] = useState(null);
+  // const [session, setSession] = useState(null);
 
-  useEffect(() => {
-    const fetchSession = async () => {
-      const data = await getServerSession(options);
-      setSession(data);
-    };
-    fetchSession();
-  }, []);
+  // useEffect(() => {
+  //   const fetchSession = async () => {
+  //     const data = await getServerSession(options);
+  //     setSession(data);
+  //   };
+  //   fetchSession();
+  // }, []);
 
   const toggleMenu = () => {
     setOpen(!open);

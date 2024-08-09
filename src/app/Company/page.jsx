@@ -1,17 +1,15 @@
-"use client";
-import React, { useState } from "react";
+import React from "react";
 import { getServerSession } from "next-auth";
 import { options } from "../api/auth/[...nextauth]/options";
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import data from "./data.json";
-async function page() {
+const page = async () => {
   const session = await getServerSession(options);
 
   if (!session) {
-    redirect("/api/auth/signin?callbackUrl=/Company");
+    redirect("/api/auth/signin?callbackUrl=/Find");
   }
-  console.log(session);
 
   return (
     <div>
@@ -57,6 +55,6 @@ async function page() {
       )}
     </div>
   );
-}
+};
 
 export default page;

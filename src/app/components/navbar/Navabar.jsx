@@ -65,15 +65,23 @@ const Navbar = () => {
       {open && (
         <div className="sm:bg-white shadow-lg w-[100%] h-[100%] md:hidden ">
           <div className="flex flex-col space-y-4 p-4">
-            <Link href="/" className="hover:text-gray-800" onClick={toggleMenu}>
-              Homepage
+            <Link href="/" className="hover:text-[#1877F2] gap-2">
+              Home
             </Link>
-            <Link href="/contact" className="hover:text-gray-800">
-              Contact
+            <Link href="/Find" className="hover:text-[#1877F2] gap-2">
+              Hackathon
             </Link>
-            <Link href="/about" className="hover:text-gray-800">
-              About
+            <Link href="/Company" className="hover:text-[#1877F2] gap-2">
+              Company
             </Link>
+            <Link href="/about" className="hover:text-[#1877F2] gap-2">
+              Contact Us
+            </Link>
+            {session ? (
+              <Link href="/api/auth/signout?callbackUrl=/">Logout</Link>
+            ) : (
+              <Link href="/">About Us</Link>
+            )}
           </div>
         </div>
       )}

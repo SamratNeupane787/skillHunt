@@ -1,26 +1,29 @@
-"use server";
-
 import mongoose, { Schema } from "mongoose";
 
-const companySchema = mongoose.Schema(
+mongoose.connect(process.env.MONGODB_URL, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+const EventSchema = new Schema(
   {
-    name: {
+    title: {
       type: String,
       required: true,
     },
-    email: {
+    description: {
       type: String,
       required: true,
     },
-    eventName: {
-      type: String,
-      required: true,
-    },
-    eventDate: {
+    date: {
       type: Date,
       required: true,
     },
-    organizedBy: {
+    location: {
+      type: String,
+      required: true,
+    },
+    createdBy: {
       type: String,
       required: true,
     },
@@ -29,3 +32,8 @@ const companySchema = mongoose.Schema(
     timestamps: true,
   }
 );
+
+const CompanyEvent =
+  mongoose.models.CompanyEvent || mongoose.model("CompanyEvent", EventSchema);
+
+export default CompanyEvent;

@@ -17,8 +17,8 @@ function Student() {
             1) Signup <br /> 2) List Event <br />
             3) And Done!
           </p>
-          <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full  w-36 mt-7 sm:text-xl md:text-2xl ">
-            <Link href="/Student">Host</Link>
+          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full  w-36 mt-7 sm:text-xl md:text-2xl ">
+            <Link href="/Company">Host</Link>
           </button>
         </div>
         <div>

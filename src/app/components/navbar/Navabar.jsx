@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
@@ -42,7 +43,7 @@ const Navbar = () => {
           <Link href="/Company" className="hover:text-[#1877F2] gap-2">
             Company
           </Link>
-          <Link href="/about" className="hover:text-[#1877F2] gap-2">
+          <Link href="/Contact" className="hover:text-[#1877F2] gap-2">
             Contact Us
           </Link>
           {session ? (
@@ -74,7 +75,7 @@ const Navbar = () => {
             <Link href="/Company" className="hover:text-[#1877F2] gap-2">
               Company
             </Link>
-            <Link href="/about" className="hover:text-[#1877F2] gap-2">
+            <Link href="/Contact" className="hover:text-[#1877F2] gap-2">
               Contact Us
             </Link>
             {session ? (

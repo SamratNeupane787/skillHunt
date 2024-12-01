@@ -25,7 +25,7 @@ function Student() {
             <br />
           </p>
           <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full  w-36 mt-7 sm:text-xl md:text-2xl ">
-            <Link href="/Student">Find</Link>
+            <Link href="/Find">Find</Link>
           </button>
         </div>
       </div>

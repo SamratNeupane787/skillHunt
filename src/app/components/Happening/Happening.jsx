@@ -1,35 +1,58 @@
-import React from "react";
-import Image from "next/image";
-import data from "./data.json";
-function Happening() {
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { InfiniteMovingCards } from "../ui/infinite-moving-cards";
+
+export function InfiniteMovingCardsDemo() {
+  const [testi, setTesti] = useState([]);
+
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      const data = await fetch("http://localhost:3000/api/eventlisted");
+      const res = await data.json();
+      setTesti(res);
+    };
+
+    fetchTestimonials();
+  }, []);
   return (
-    <div>
-      <div className=" font-semibold font-mono pt-6 text-center">
-        <h1 className=" text-7xl text-[#1877F2] ">Happening Now!</h1>
-      </div>
-      <div className=" grid  gap-4 place-items-center py-12 sm:grid-cols-1 md:grid-cols-3">
-        {data?.map((item) => {
-          return (
-            <div
-              key={item.eventName}
-              className=" w-full md:w-96 border-2 border-[#505052] rounded-lg px-8 py-8"
-            >
-              <div className=" flex items-center justify-center flex-wrap">
-                <div>
-                  <Image src="/chat.png" width={120} height={120} />
-                </div>
-                <div className="border-l-2 pl-2 max-w-fit">
-                  <p>{item.eventName}</p>
-                  <p>Organized By:{item.organizer}</p>
-                  <p>Date:{item.date}</p>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+    <div className="h-[30rem] rounded-md flex flex-col antialiased  items-center justify-center  overflow-hidden">
+      <h1 className="text-center text-[#1877F2]  text-6xl font-bold pb-8">
+        Happening Soon!
+      </h1>
+      <InfiniteMovingCards items={testi} direction="right" speed="slow" />
     </div>
   );
 }
 
-export default Happening;
+// const testimonials = [
+//   {
+//     quote:
+//       "It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light, it was the season of Darkness, it was the spring of hope, it was the winter of despair.",
+//     name: "Charles Dickens",
+//     title: "A Tale of Two Cities",
+//   },
+//   {
+//     quote:
+//       "To be, or not to be, that is the question: Whether 'tis nobler in the mind to suffer The slings and arrows of outrageous fortune, Or to take Arms against a Sea of troubles, And by opposing end them: to die, to sleep.",
+//     name: "William Shakespeare",
+//     title: "Hamlet",
+//   },
+//   {
+//     quote: "All that we see or seem is but a dream within a dream.",
+//     name: "Edgar Allan Poe",
+//     title: "A Dream Within a Dream",
+//   },
+//   {
+//     quote:
+//       "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.",
+//     name: "Jane Austen",
+//     title: "Pride and Prejudice",
+//   },
+//   {
+//     quote:
+//       "Call me Ishmael. Some years ago—never mind how long precisely—having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world.",
+//     name: "Herman Melville",
+//     title: "Moby-Dick",
+//   },
+// ];

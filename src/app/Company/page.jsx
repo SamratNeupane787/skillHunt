@@ -30,6 +30,11 @@ const Page = async () => {
               Create Event
             </button>
           </Link>
+          <Link href="/CreateAds">
+            <button className="ml-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full">
+              Create Ads
+            </button>
+          </Link>
 
           <h1 className="text-center text-3xl font-semibold py-8">
             Events you have created!
@@ -39,7 +44,7 @@ const Page = async () => {
             {data?.length > 0 ? (
               data.map((item) => (
                 <div
-                  key={item._id} // Use the unique event `_id` from the response
+                  key={item._id}
                   className="bg-black text-white min-w-full h-48 md:w-96 border-2 border-[#505052] rounded-lg my-4 grid place-items-center"
                 >
                   <div className="flex items-center justify-center flex-wrap">

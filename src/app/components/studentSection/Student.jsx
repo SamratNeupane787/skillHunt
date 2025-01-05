@@ -24,7 +24,7 @@ function Student() {
             <span className="py-4">3) Win the Prize!</span>
             <br />
           </p>
-          <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full  w-36 mt-7 sm:text-xl md:text-2xl ">
+          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full  w-36 mt-7 sm:text-xl md:text-2xl ">
             <Link href="/Find">Find</Link>
           </button>
         </div>

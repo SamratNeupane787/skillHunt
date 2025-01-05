@@ -22,7 +22,7 @@ export const GET = async (req) => {
     } else if (useremail) {
       eventsListed = await CompanyEvent.find({ createdBy: useremail });
     } else {
-      eventsListed = await CompanyEvent.find().sort({ createdAt: -1 }).limit(9);
+      eventsListed = await CompanyEvent.find().sort({ createdAt: -1 }).limit(25);
     }
     return new NextResponse(JSON.stringify(eventsListed), { status: 200 });
   } catch (error) {

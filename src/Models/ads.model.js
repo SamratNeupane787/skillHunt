@@ -2,23 +2,22 @@
 import mongoose, { Schema } from "mongoose";
 mongoose.connect(process.env.MONGODB_URL);
 
-const participantSchema = new Schema(
+const adSchema = new Schema(
   {
-    userId: {
+    adsTitle: {
       type: String,
       required: true,
     },
-    teamName: {
-      type: String,
-      required: true,
+    status: {
+      type:
     },
     eventId: {
       type: String,
       required: true,
     },
     eventTitle: {
-       type: String, 
-       required: true,
+      type: String,
+      required: true,
     },
     registeredAt: {
       type: Date,
@@ -30,8 +29,7 @@ const participantSchema = new Schema(
   }
 );
 
-const Participant =
-  mongoose.models.Participant ||
-  mongoose.model("Participant", participantSchema);
+const AdsCreate =
+  mongoose.models.AdsCreate || mongoose.model("AdsCreate", adSchema);
 
-export default Participant;
+export default AdsCreate;

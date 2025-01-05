@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import Participant from "../../../Models/participant.model";
 import CompanyEvent from "../../../Models/event.model";
+import { URL } from "url";
 
 export async function POST(req) {
   try {
-    const { userId, eventId, teamName } = await req.json();
+    const { userId, eventId, teamName, eventTitle } = await req.json();
+    console.log("Received eventTitle in API:", eventTitle);
 
     const event = await CompanyEvent.findById(eventId);
     if (!event) {
@@ -26,9 +28,9 @@ export async function POST(req) {
       userId,
       eventId,
       teamName,
+      eventTitle,
     });
 
-    // Return a success response
     return NextResponse.json(
       { message: "Successfully registered for the event." },
       { status: 201 }
@@ -42,8 +44,26 @@ export async function POST(req) {
   }
 }
 
-export async function Get(req) {
-  const { searchParams } = new URL(req.url);
+export const GET = async (req) => {
+  try {
+    const { searchParams } = new URL(req.url);
+    const userEmail = searchParams.get("email");
 
-  
-}
+    const eventsJoined = await Participant.find({ userId: userEmail });
+
+    if (!eventsJoined || eventsJoined.length === 0) {
+      return NextResponse.json(
+        { message: "No events joined." },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(eventsJoined, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    return NextResponse.json(
+      { message: "Something went wrong!" },
+      { status: 500 }
+    );
+  }
+};

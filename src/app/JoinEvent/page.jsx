@@ -7,7 +7,6 @@ const JoinEventPage = () => {
   const [eventData, setEventData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [email, setEmail] = useState("");
   const [teamName, setTeamName] = useState("");
   const [eventId, setEventId] = useState(null);
   const { data: session } = useSession();
@@ -19,6 +18,7 @@ const JoinEventPage = () => {
     const eventIdParam = urlParams.get("eventId");
     setEventId(eventIdParam);
 
+
     if (eventIdParam) {
       const fetchEventData = async () => {
         try {
@@ -29,6 +29,7 @@ const JoinEventPage = () => {
             throw new Error("Failed to fetch event data");
           }
           const data = await response.json();
+          console.log(data)
           setEventData(data);
         } catch (err) {
           setError(err.message);
@@ -41,33 +42,39 @@ const JoinEventPage = () => {
     }
   }, []);
 
+
+
+
+
+
   const router = useRouter();
   const handleSubmit = async () => {
-    try {
-      const response = await fetch("http://localhost:3000/api/eventjoin", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: session?.user?.email,
-          eventId,
-          teamName,
-        }),
-      });
+  try {
+    const response = await fetch("http://localhost:3000/api/eventjoin", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId: session?.user?.email,
+        eventId,
+        teamName,
+        eventTitle: eventData?.title, // Include the event title here
+      }),
+    });
 
-      const result = await response.json();
-      if (response.ok) {
-        console.log("Event joined successfully:", result.message);
-        alert("Event joined successfully");
-        router.push("/Find");
-      } else {
-        alert(result.message || "Failed to join event");
-      }
-    } catch (err) {
-      console.error("An error occurred. Please try again.", err);
+    const result = await response.json();
+    if (response.ok) {
+      console.log("Event joined successfully:", result.message);
+      alert("Event joined successfully");
+      router.push("/Find");
+    } else {
+      alert(result.message || "Failed to join event");
     }
-  };
+  } catch (err) {
+    console.error("An error occurred. Please try again.", err);
+  }
+};
 
   if (loading) return <div>Loading event details...</div>;
   if (error) return <div>Error: {error}</div>;

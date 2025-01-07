@@ -20,14 +20,18 @@
       {
         "name": "next"
       }
-    ]
+    ],
+    "strictNullChecks": true
   },
   "include": [
     "next-env.d.ts",
     ".next/types/**/*.ts",
     "**/*.ts",
-    "**/*.tsx"
-, "src/app/api/auth/[...nextauth]/options.js", "src/app/api/auth/[...nextauth]/route.js", "src/lib/mongodb.js"  ],
+    "**/*.tsx",
+    "src/app/api/auth/[...nextauth]/options.js",
+    "src/app/api/auth/[...nextauth]/route.js",
+    "src/lib/mongodb.js"
+  ],
   "exclude": [
     "node_modules"
   ]

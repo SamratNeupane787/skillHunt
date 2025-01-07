@@ -30,7 +30,7 @@ const Page = async () => {
               Create Event
             </button>
           </Link>
-          <Link href="/CreateAds">
+          <Link href="/AdsPage">
             <button className="ml-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full">
               Create Ads
             </button>

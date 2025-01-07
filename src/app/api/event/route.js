@@ -1,8 +1,7 @@
 import { connectMongoDB } from "../../../lib/mongodb";
 import CompanyEvent from "../../../Models/event.model";
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { options } from "../auth/[...nextauth]/options";
+
 export async function POST(request) {
   const { title, description, date, location, createdBy } =
     await request.json();

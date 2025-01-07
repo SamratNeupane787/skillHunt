@@ -5,7 +5,8 @@ import { useSession } from "next-auth/react";
 
 const CreateAd = () => {
   const { data: session } = useSession();
-  const username = session?.user?.name;
+  const userEmail = session?.user?.email;
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
@@ -26,6 +27,7 @@ const CreateAd = () => {
     formData.append("location", location);
     formData.append("date", date);
     formData.append("image", image);
+    formData.append("createdBy", userEmail);
 
     try {
       const res = await fetch("/api/ads", {

@@ -2,6 +2,7 @@ import { v2 as cloudinary } from "cloudinary";
 import AdsCreate from "../../../Models/ads.model";
 import { connectMongoDB } from "../../../lib/mongodb";
 import { NextResponse } from "next/server";
+import { create } from "domain";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -11,32 +12,34 @@ cloudinary.config({
 
 export const config = {
   api: {
-    bodyParser: false, // We are handling file uploads with multipart/form-data
+    bodyParser: false,
   },
 };
 
 export async function POST(request) {
   try {
-    // Parse the form data
     const form = await request.formData();
     const title = form.get("title");
     const description = form.get("description");
     const date = form.get("date");
     const location = form.get("location");
-    const image = form.get("image"); // The uploaded file
-
-    if (!title || !description || !date || !location || !image) {
+    const image = form.get("image");
+    const createdBy = form.get("createdBy");
+    if (!title || !description || !date || !location || !image || !createdBy) {
       return NextResponse.json(
         { message: "All fields are required" },
         { status: 400 }
       );
     }
 
-    // Connect to MongoDB
     await connectMongoDB();
 
-    // Check if ad already exists
-    const adsExist = await AdsCreate.findOne({ title, description, date });
+    const adsExist = await AdsCreate.findOne({
+      title,
+      description,
+      date,
+      createdBy,
+    });
     if (adsExist) {
       return NextResponse.json(
         { message: "Ad already exists" },
@@ -44,8 +47,7 @@ export async function POST(request) {
       );
     }
 
-    // Upload image to Cloudinary
-    const fileBuffer = await image.arrayBuffer(); // Convert to buffer for Cloudinary
+    const fileBuffer = await image.arrayBuffer();
     const uploadedImage = await cloudinary.uploader.upload_stream({
       folder: "ads",
     });
@@ -63,14 +65,15 @@ export async function POST(request) {
 
     const uploadedResult = await uploadPromise;
 
-    // Save ad to the database
+    console.log(uploadedResult);
+
     const newAd = await AdsCreate.create({
       title,
       description,
       location,
       date,
-      createdBy: form.get("createdBy"),
-      imagePath: uploadedResult.secure_url, // Cloudinary URL
+      createdBy,
+      imagePath: uploadedResult.secure_url,
     });
 
     return NextResponse.json(
@@ -78,7 +81,7 @@ export async function POST(request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Server Error:", error); // Log the error for debugging
+    console.error("Server Error:", error);
     return NextResponse.json(
       { message: "Server error", error: error.message },
       { status: 500 }

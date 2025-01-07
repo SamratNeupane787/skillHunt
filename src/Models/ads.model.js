@@ -1,13 +1,11 @@
 "use server";
 import mongoose, { Schema } from "mongoose";
 
-// Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URL, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
 
-// Define the ad schema
 const adSchema = new Schema(
   {
     title: {
@@ -28,24 +26,24 @@ const adSchema = new Schema(
     },
     createdBy: {
       type: String,
-      required: true, // Ensure the user creating the ad is recorded
+      required: true,
     },
     status: {
       type: String,
-      enum: ["active", "inactive", "pending"], // Restrict status values
-      default: "active", // Default to active
+      enum: ["active", "inactive", "pending"],
+      default: "active",
     },
     imagePath: {
       type: String,
-      required: true, // Cloudinary URL for the uploaded image
+      required: true,
     },
     eventId: {
       type: String,
-      required: false, // Optional: For linking ads to specific events
+      required: false,
     },
     eventTitle: {
       type: String,
-      required: false, // Optional: Title of the associated event
+      required: false,
     },
     registeredAt: {
       type: Date,
@@ -53,11 +51,10 @@ const adSchema = new Schema(
     },
   },
   {
-    timestamps: true, // Automatically add createdAt and updatedAt fields
+    timestamps: true,
   }
 );
 
-// Create or retrieve the model
 const AdsCreate =
   mongoose.models.AdsCreate || mongoose.model("AdsCreate", adSchema);
 

@@ -4,6 +4,19 @@ import { connectMongoDB } from "../../../lib/mongodb";
 import { NextResponse } from "next/server";
 import { create } from "domain";
 
+// backend route.js (API route for fetching ads)
+
+export async function GET() {
+  try {
+    // Sort ads by createdAt field in descending order to get the most recent ads first
+    const ads = await AdsCreate.find().sort({ createdAt: -1 }).limit(5); // Fetch the 5 most recent ads
+    return NextResponse.json({ ads }, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching ads:", error);
+    return NextResponse.json({ message: "Error fetching ads" }, { status: 500 });
+  }
+}
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,

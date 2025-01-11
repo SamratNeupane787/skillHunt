@@ -6,7 +6,6 @@ import { useSession } from "next-auth/react";
 const CreateAd = () => {
   const { data: session } = useSession();
   const userEmail = session?.user?.email;
-
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");

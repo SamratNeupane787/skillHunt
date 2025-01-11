@@ -1,6 +1,8 @@
 import React from "react";
 import { getServerSession } from "next-auth";
 import { options } from "../api/auth/[...nextauth]/options";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Calendar, MapPin, Plus } from "lucide-react";
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -42,40 +44,59 @@ const Page = async () => {
             </button>
           </Link>
 
-          <h1 className="text-center text-3xl font-semibold py-8">
+          <h2 className="text-2xl font-bold text-center mt-8">
             Events you have created!
-          </h1>
+          </h2>
 
-          <div className="grid place-items-center mx-12 gap-2 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            {data?.length > 0 ? (
-              data.map((item) => (
-                <div
-                  key={item._id}
-                  className="bg-black text-white min-w-full h-48 md:w-96 border-2 border-[#505052] rounded-lg my-4 grid place-items-center"
-                >
-                  <div className="flex items-center justify-center flex-wrap">
-                    <div>
+          {data?.length > 0 ? (
+            <div className="w-full pt-8">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {data.map((item) => (
+                  <Card
+                    key={item._id}
+                    className="overflow-hidden hover:shadow-lg transition-shadow"
+                  >
+                    <CardHeader className="p-0">
                       <Image
                         src="/star.jpeg"
-                        width={120}
-                        height={120}
-                        alt="Event Image"
+                        alt={item.title}
+                        width={400}
+                        height={200}
+                        className="w-full h-48 object-cover"
                       />
-                    </div>
-                    <div className="border-l-2 pl-2 max-w-fit">
-                      <p>{item.title}</p>
-                      <p>{item.description}</p>
-                      <p>Organized By: {item.createdBy}</p>
-                      <p>Date: {item.date}</p>
-                      <p>Location: {item.location}</p>
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p>No events found</p>
-            )}
-          </div>
+                    </CardHeader>
+                    <CardContent className="p-6">
+                      <h3 className="font-semibold text-xl mb-4">
+                        {item.title}
+                      </h3>
+                      <div className="space-y-2 text-sm text-muted-foreground">
+                        <p className="flex items-center">
+                          <Calendar className="mr-2 h-4 w-4" />
+                          {new Date(item.date).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
+                        </p>
+                        <p className="flex items-center">
+                          <MapPin className="mr-2 h-4 w-4" />
+                          {item.location}
+                        </p>
+                        <p className="text-xs">
+                          Organized by: {item.createdBy}
+                        </p>
+                        <p className="text-xs">
+                          Description: {item.description}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <p>No events found</p>
+          )}
         </div>
       ) : (
         <div className="text-center text-8xl">

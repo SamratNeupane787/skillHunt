@@ -3,7 +3,7 @@ import CompanyEvent from "../../../Models/event.model";
 import { NextResponse } from "next/server";
 
 export async function POST(request) {
-  const { title, description, date, location, createdBy } =
+  const { title, description, date, location, createdBy, email } =
     await request.json();
 
   try {
@@ -28,6 +28,7 @@ export async function POST(request) {
       date,
       location,
       createdBy,
+      email,
     });
     return NextResponse.json(
       { message: "Event Created Successfully" },

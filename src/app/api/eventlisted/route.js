@@ -20,9 +20,13 @@ export const GET = async (req) => {
         );
       }
     } else if (useremail) {
-      eventsListed = await CompanyEvent.find({ createdBy: useremail });
+      eventsListed = await CompanyEvent.find({ email: useremail })
+        .sort({ createdAt: -1 })
+        .limit(6);
+
+      console.log(eventsListed);
     } else {
-      eventsListed = await CompanyEvent.find().sort({ createdAt: -1 }).limit(25);
+      eventsListed = await CompanyEvent.find().sort({ createdAt: -1 }).limit(6);
     }
     return new NextResponse(JSON.stringify(eventsListed), { status: 200 });
   } catch (error) {

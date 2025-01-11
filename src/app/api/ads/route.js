@@ -2,29 +2,26 @@ import { v2 as cloudinary } from "cloudinary";
 import AdsCreate from "../../../Models/ads.model";
 import { connectMongoDB } from "../../../lib/mongodb";
 import { NextResponse } from "next/server";
-import { create } from "domain";
 
-
-// backend route.js (API route for fetching ads) 
+// backend route.js (API route for fetching ads)
 //fetch
-export async function GET(request) {
-  const { searchParams } = new URL(request.url);
-  const createdBy = searchParams.get("createdBy"); // Extract 'createdBy' query parameter
-
+export const GET = async (request) => {
   try {
+    const { searchParams } = new URL(request.url);
+    const createdBy = searchParams.get("createdBy");
+
+    console.log(createdBy);
     await connectMongoDB();
 
     let ads;
 
     if (createdBy) {
-      // Fetch ads by `createdBy`
       ads = await AdsCreate.find({ createdBy }).sort({ createdAt: -1 });
     } else {
-      // Fetch the 5 most recent ads
       ads = await AdsCreate.find().sort({ createdAt: -1 }).limit(5);
     }
 
-    return NextResponse.json({ ads }, { status: 200 });
+    return new NextResponse(JSON.stringify(ads), { status: 200 });
   } catch (error) {
     console.error("Error fetching ads:", error);
     return NextResponse.json(
@@ -32,7 +29,7 @@ export async function GET(request) {
       { status: 500 }
     );
   }
-}
+};
 //edit
 export async function PUT(request) {
   try {
@@ -94,8 +91,6 @@ export async function DELETE(request) {
     return NextResponse.json({ message: "Error deleting ad" }, { status: 500 });
   }
 }
-
-
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,

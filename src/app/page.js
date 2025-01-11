@@ -14,25 +14,28 @@ export default function Home() {
 
   useEffect(() => {
     async function fetchAds() {
-      const response = await fetch("/api/ads"); // Fetch ads from your backend
-      const data = await response.json();
-      if (data && data.ads && data.ads.length > 0) {
-        setAds(data.ads); // Store ads in state
-        setCurrentAd(data.ads[0]); // Show the most recent ad
+      try {
+        const response = await fetch("/api/ads");
+        const data = await response.json();
+        console.log("Fetched Ads:", data);
+        if (data && data.length > 0) {
+          setAds(data);
+          setCurrentAd(data[0]);
+        }
+      } catch (error) {
+        console.error("Error fetching ads:", error);
       }
     }
-
     fetchAds();
   }, []);
 
   const closePopup = () => {
-    setCurrentAd(null); // Close the popup when the button is clicked
+    setCurrentAd(null);
   };
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between px-16 overflow-hidden">
       {currentAd && <AdPopup adData={currentAd} onClose={closePopup} />}{" "}
-      {/* Display the ad popup */}
       <HeroSection />
       <InfiniteMovingCardsDemo />
       <Student />

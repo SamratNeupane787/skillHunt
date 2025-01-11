@@ -3,9 +3,7 @@ import AdsCreate from "../../../Models/ads.model";
 import { connectMongoDB } from "../../../lib/mongodb";
 import { NextResponse } from "next/server";
 
-// backend route.js (API route for fetching ads)
-//fetch
-export const GET = async (request) => {
+export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const createdBy = searchParams.get("createdBy");
@@ -29,8 +27,8 @@ export const GET = async (request) => {
       { status: 500 }
     );
   }
-};
-//edit
+}
+
 export async function PUT(request) {
   try {
     const body = await request.json();

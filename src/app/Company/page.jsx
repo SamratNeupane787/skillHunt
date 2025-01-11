@@ -36,6 +36,12 @@ const Page = async () => {
             </button>
           </Link>
 
+          <Link href="/AdsDashboard">
+            <button className="bg-green-500 text-white px-2 py-2 rounded-3xl">
+              Manage Ads
+            </button>
+          </Link>
+
           <h1 className="text-center text-3xl font-semibold py-8">
             Events you have created!
           </h1>

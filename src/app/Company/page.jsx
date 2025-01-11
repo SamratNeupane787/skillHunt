@@ -26,19 +26,23 @@ const Page = async () => {
   return (
     <div>
       {session?.user?.role === "Google User" ? (
-        <div className="flex flex-col items-center justify-center pt-12 mx-6">
-          <div className=" flex flex-row items-center">
-            <Link href="/CreateEvent">
-              <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md">
-                +<span className=" ml-2"> Create Event</span>
-              </button>
-            </Link>
-            <Link href="/AdsPage">
-              <button className="ml-4 bg-gray-300 hover:bg-gray-200 text-black font-regular py-2 px-4 rounded-md">
-                + <span className=" ml-2">Create Ads</span>
-              </button>
-            </Link>
-          </div>
+        <div className="flex flex-col items-center justify-center">
+          <Link href="/CreateEvent">
+            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+              Create Event
+            </button>
+          </Link>
+          <Link href="/AdsPage">
+            <button className="ml-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full">
+              Create Ads
+            </button>
+          </Link>
+
+          <Link href="/AdsDashboard">
+            <button className="bg-green-500 text-white px-2 py-2 rounded-3xl">
+              Manage Ads
+            </button>
+          </Link>
 
           <h2 className="text-2xl font-bold text-center mt-8">
             Events you have created!

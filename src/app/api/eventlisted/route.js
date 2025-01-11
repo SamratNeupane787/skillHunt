@@ -1,7 +1,5 @@
 import CompanyEvent from "../../../Models/event.model";
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { options } from "../auth/[...nextauth]/options";
 
 export const GET = async (req) => {
   try {

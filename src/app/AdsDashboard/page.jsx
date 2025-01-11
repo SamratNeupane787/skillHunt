@@ -28,7 +28,6 @@ export default function AdsDashboard() {
         }
       );
 
-      console.log(response);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to fetch ads");
@@ -97,7 +96,7 @@ export default function AdsDashboard() {
   }
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="min-h-screen container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Manage Your Ads</h1>
 
       {editingAd ? (

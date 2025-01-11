@@ -2,7 +2,6 @@ import { v2 as cloudinary } from "cloudinary";
 import AdsCreate from "../../../Models/ads.model";
 import { connectMongoDB } from "../../../lib/mongodb";
 import { NextResponse } from "next/server";
-import { create } from "domain";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,

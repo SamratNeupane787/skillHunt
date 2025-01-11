@@ -4,18 +4,98 @@ import { connectMongoDB } from "../../../lib/mongodb";
 import { NextResponse } from "next/server";
 import { create } from "domain";
 
-// backend route.js (API route for fetching ads)
 
-export async function GET() {
+// backend route.js (API route for fetching ads) 
+//fetch
+export async function GET(request) {
+  const { searchParams } = new URL(request.url);
+  const createdBy = searchParams.get("createdBy"); // Extract 'createdBy' query parameter
+
   try {
-    // Sort ads by createdAt field in descending order to get the most recent ads first
-    const ads = await AdsCreate.find().sort({ createdAt: -1 }).limit(5); // Fetch the 5 most recent ads
+    await connectMongoDB();
+
+    let ads;
+
+    if (createdBy) {
+      // Fetch ads by `createdBy`
+      ads = await AdsCreate.find({ createdBy }).sort({ createdAt: -1 });
+    } else {
+      // Fetch the 5 most recent ads
+      ads = await AdsCreate.find().sort({ createdAt: -1 }).limit(5);
+    }
+
     return NextResponse.json({ ads }, { status: 200 });
   } catch (error) {
     console.error("Error fetching ads:", error);
-    return NextResponse.json({ message: "Error fetching ads" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Error fetching ads" },
+      { status: 500 }
+    );
   }
 }
+//edit
+export async function PUT(request) {
+  try {
+    const body = await request.json();
+    const { id, title, description, date, location, imagePath } = body;
+
+    if (!id || !title || !description || !date || !location) {
+      return NextResponse.json(
+        { message: "All fields are required" },
+        { status: 400 }
+      );
+    }
+
+    await connectMongoDB();
+
+    const updatedAd = await AdsCreate.findByIdAndUpdate(
+      id,
+      { title, description, date, location, imagePath },
+      { new: true }
+    );
+
+    if (!updatedAd) {
+      return NextResponse.json({ message: "Ad not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(
+      { message: "Ad updated successfully", ad: updatedAd },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error updating ad:", error);
+    return NextResponse.json({ message: "Error updating ad" }, { status: 500 });
+  }
+}
+//delete
+
+export async function DELETE(request) {
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+
+  if (!id) {
+    return NextResponse.json({ message: "Ad ID is required" }, { status: 400 });
+  }
+
+  try {
+    await connectMongoDB();
+    const deletedAd = await AdsCreate.findByIdAndDelete(id);
+
+    if (!deletedAd) {
+      return NextResponse.json({ message: "Ad not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(
+      { message: "Ad deleted successfully" },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error deleting ad:", error);
+    return NextResponse.json({ message: "Error deleting ad" }, { status: 500 });
+  }
+}
+
+
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,

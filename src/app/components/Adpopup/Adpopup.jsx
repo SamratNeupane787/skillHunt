@@ -1,11 +1,10 @@
-// components/AdPopup.js
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 const AdPopup = ({ adData, onClose }) => {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(false), 5000); // Close after 5 seconds
+    const timer = setTimeout(() => setIsVisible(false), 70000);
     return () => clearTimeout(timer);
   }, []);
 

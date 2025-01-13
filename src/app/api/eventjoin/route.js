@@ -49,8 +49,13 @@ export const GET = async (req) => {
     const { searchParams } = new URL(req.url);
     const userEmail = searchParams.get("email");
 
-    const eventsJoined = await Participant.find({ userId: userEmail });
+    console.log("Email:", userEmail);
 
+    const eventsJoined = await Participant.find({ userId: userEmail }).sort({
+      createdAt: -1,
+    });
+
+    console.log(eventsJoined);
     if (!eventsJoined || eventsJoined.length === 0) {
       return NextResponse.json(
         { message: "No events joined." },

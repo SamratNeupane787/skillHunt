@@ -139,7 +139,7 @@ export default function CreateEvent() {
                   />
                 </div>
 
-                <Button type="submit" className="w-full bg-blue-600">
+                <Button type="submit" className="w-full bg-blue-600 text-white">
                   Create Event
                 </Button>
               </form>

@@ -10,7 +10,9 @@ export const GET = async (req) => {
 
     let eventsListed;
     if (eventId) {
-      eventsListed = await CompanyEvent.findById(eventId);
+      eventsListed = await CompanyEvent.findById(eventId).sort({
+        createdAtL: -1,
+      });
       if (!eventsListed) {
         return new NextResponse(
           JSON.stringify({ message: "Event not found!" }),

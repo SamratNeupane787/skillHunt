@@ -18,7 +18,6 @@ const JoinEventPage = () => {
     const eventIdParam = urlParams.get("eventId");
     setEventId(eventIdParam);
 
-
     if (eventIdParam) {
       const fetchEventData = async () => {
         try {
@@ -29,7 +28,7 @@ const JoinEventPage = () => {
             throw new Error("Failed to fetch event data");
           }
           const data = await response.json();
-          console.log(data)
+          console.log(data);
           setEventData(data);
         } catch (err) {
           setError(err.message);
@@ -42,50 +41,45 @@ const JoinEventPage = () => {
     }
   }, []);
 
-
-
-
-
-
   const router = useRouter();
   const handleSubmit = async () => {
-  try {
-    const response = await fetch("http://localhost:3000/api/eventjoin", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        userId: session?.user?.email,
-        eventId,
-        teamName,
-        eventTitle: eventData?.title, // Include the event title here
-      }),
-    });
+    try {
+      const response = await fetch("http://localhost:3000/api/eventjoin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: session?.user?.email,
+          eventId,
+          teamName,
+          eventTitle: eventData?.title,
+        }),
+      });
 
-    const result = await response.json();
-    if (response.ok) {
-      console.log("Event joined successfully:", result.message);
-      alert("Event joined successfully");
-      router.push("/Find");
-    } else {
-      alert(result.message || "Failed to join event");
+      const result = await response.json();
+      if (response.ok) {
+        console.log("Event joined successfully:", result.message);
+        alert("Event joined successfully");
+        router.push("/Find");
+      } else {
+        alert(result.message || "Failed to join event");
+      }
+    } catch (err) {
+      console.error("An error occurred. Please try again.", err);
     }
-  } catch (err) {
-    console.error("An error occurred. Please try again.", err);
-  }
-};
+  };
 
   if (loading) return <div>Loading event details...</div>;
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div>
-      <h1 className="text-3xl font-semibold text-center">
+    <div className="  h-screen">
+      <h1 className="text-3xl font-semibold text-center pt-6">
         Join {eventData?.title}
       </h1>
       {eventData ? (
-        <div className="text-center grid grid-cols-2 place-items-center gap-4">
+        <div className="text-center grid grid-cols-2 place-items-center gap-4 pt-8">
           <div className="grid gap-6">
             <h1 className="text-2xl font-serif">Event details</h1>
             <p className="tracking-normal text-xl">
@@ -124,7 +118,7 @@ const JoinEventPage = () => {
             <button
               onClick={handleSubmit}
               type="submit"
-              className="w-1/2 rounded-lg bg-black h-[2.3rem] text-white"
+              className="w-1/2 rounded-lg bg-blue-600 h-[2.3rem] text-white"
             >
               Submit
             </button>

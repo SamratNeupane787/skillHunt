@@ -88,8 +88,13 @@ const JoinEventPage = () => {
             <p className="tracking-normal text-xl">
               Location: {eventData.location}
             </p>
-            <p className="tracking-normal text-xl">
-              Date: {eventData.date.substring(0, 10)}
+            <p className="text-sm">
+              <span className="font-semibold">Starting from:</span>{" "}
+              {new Date(eventData.startDate).toLocaleString()}
+            </p>
+            <p className="text-sm">
+              <span className="font-semibold">Ending At:</span>{" "}
+              {new Date(eventData.endDate).toLocaleString()}
             </p>
           </div>
           <div className="max-w-md w-full mx-auto p-6 space-y-6 bg-card rounded-lg shadow-lg">

@@ -78,14 +78,14 @@ const Page = async () => {
                           {item.title}
                         </h3>
                         <div className="space-y-2 text-sm text-muted-foreground">
-                          <p className="flex items-center">
+                          {/* <p className="flex items-center">
                             <Calendar className="mr-2 h-4 w-4" />
                             {new Date(item.date).toLocaleDateString("en-US", {
                               year: "numeric",
                               month: "long",
                               day: "numeric",
                             })}
-                          </p>
+                          </p> */}
                           <p className="flex items-center">
                             <MapPin className="mr-2 h-4 w-4" />
                             {item.location}
@@ -96,6 +96,7 @@ const Page = async () => {
                           <p className="text-xs">
                             Description: {item.description}
                           </p>
+                          <p className="text-xs">Category: {item.categories}</p>
                         </div>
                       </CardContent>
                     </Card>

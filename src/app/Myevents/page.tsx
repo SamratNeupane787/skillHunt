@@ -124,7 +124,7 @@ const Page = async () => {
                         <div className="mt-4">
                           <Link href="/Deploy">
                             <button className="w-full bg-gradient-to-r from-green-400 to-blue-500 text-white py-2 rounded-md hover:from-green-500 hover:to-blue-600 transition duration-300 shadow-md">
-                              Deploy Now
+                              Submit Project
                             </button>
                           </Link>
                         </div>

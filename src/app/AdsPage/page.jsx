@@ -1,30 +1,29 @@
 "use client";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import Link from "next/link";
-import { CalendarIcon, Upload } from "lucide-react";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
+import { useToast } from "@/hooks/use-toast";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useToast } from "@/hooks/use-toast";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+import { CalendarIcon, Upload } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+
+import { cn } from "libs/utils";
 
 export default function CreateAd() {
   const { data: session } = useSession();
@@ -32,13 +31,55 @@ export default function CreateAd() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
-  const [date, setDate] = useState();
+  const [date, setDate] = useState(null); // Make sure date is initialized as null
   const [image, setImage] = useState(null);
+  const [isPaymentSuccessful, setIsPaymentSuccessful] = useState(false);
   const router = useRouter();
-  const toast = useToast();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentStatus = urlParams.get("status");
+
+    if (paymentStatus === "Completed") {
+      setIsPaymentSuccessful(true);
+    }
+
+    const storedData = JSON.parse(localStorage.getItem("adFormData"));
+    if (storedData) {
+      setTitle(storedData.title || "");
+      setDescription(storedData.description || "");
+      setLocation(storedData.location || "");
+      setDate(storedData.date ? new Date(storedData.date) : null);
+      setImage(storedData.image || null);
+    }
+  }, []);
+
+  const handlePaymentRedirect = () => {
+    if (!title || !description || !location || !date || !image) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please fill all fields",
+      });
+      return;
+    }
+
+    const adFormData = {
+      title,
+      description,
+      location,
+      date: date ? date.toISOString() : "",
+      image,
+    };
+
+    localStorage.setItem("adFormData", JSON.stringify(adFormData));
+    router.push("/Khalti");
+  };
 
   const handleCreateAd = async (e) => {
     e.preventDefault();
+
     if (!title || !description || !location || !date || !image) {
       toast({
         variant: "destructive",
@@ -63,11 +104,11 @@ export default function CreateAd() {
       });
 
       if (res.ok) {
-        alert("Ads created succesfully");
+        alert("Ad created successfully");
         router.push("/Company");
       } else {
         const errorData = await res.json();
-        alert("Ads creation failed");
+        alert(`Ad creation failed: ${errorData.message}`);
       }
     } catch (error) {
       console.error("Error creating ad:", error);
@@ -94,7 +135,6 @@ export default function CreateAd() {
                     id="title"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Enter ad title"
                     required
                   />
                 </div>
@@ -105,8 +145,6 @@ export default function CreateAd() {
                     id="description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Enter ad description"
-                    className="min-h-[100px]"
                     required
                   />
                 </div>
@@ -117,7 +155,6 @@ export default function CreateAd() {
                     id="location"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    placeholder="Enter ad location"
                     required
                   />
                 </div>
@@ -174,9 +211,22 @@ export default function CreateAd() {
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full bg-blue-700 text-white">
-                  Create Ad
-                </Button>
+                {!isPaymentSuccessful ? (
+                  <Button
+                    type="button"
+                    className="w-full bg-blue-700 text-white"
+                    onClick={handlePaymentRedirect}
+                  >
+                    Pay with Khalti
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    className="w-full bg-blue-700 text-white"
+                  >
+                    Create Advertisement
+                  </Button>
+                )}
               </form>
             </CardContent>
           </Card>

@@ -18,11 +18,15 @@ import { useToast } from "@/hooks/use-toast";
 export default function CreateEvent() {
   const { toast } = useToast();
   const { data: session } = useSession();
+
+  console.log(session);
   const username = session?.user?.name;
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [date, setDate] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [location, setLocation] = useState("");
+  const [categories, setCategories] = useState("software");
   const [createdBy, setCreatedBy] = useState("");
 
   const router = useRouter();
@@ -30,7 +34,14 @@ export default function CreateEvent() {
   const handleCreateEvent = async (e) => {
     e.preventDefault();
 
-    if (!title || !description || !location || !date) {
+    if (
+      !title ||
+      !description ||
+      !location ||
+      !startDate ||
+      !endDate ||
+      !categories
+    ) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -50,8 +61,10 @@ export default function CreateEvent() {
           description,
           createdBy: session?.user?.name,
           location,
-          date,
+          startDate,
+          endDate,
           email: session?.user?.email,
+          categories,
         }),
       });
 
@@ -109,12 +122,22 @@ export default function CreateEvent() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="date">Date</Label>
+                  <Label htmlFor="startDate">Start Date</Label>
                   <Input
-                    id="date"
+                    id="startDate"
                     type="datetime-local"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="endDate">End Date</Label>
+                  <Input
+                    id="endDate"
+                    type="datetime-local"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
                   />
                 </div>
 
@@ -126,6 +149,20 @@ export default function CreateEvent() {
                     onChange={(e) => setLocation(e.target.value)}
                     placeholder="Enter event location"
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="categories">Category</Label>
+                  <select
+                    id="categories"
+                    value={categories}
+                    onChange={(e) => setCategories(e.target.value)}
+                    className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="software">Software</option>
+                    <option value="hardware">Hardware</option>
+                    <option value="ui/ux">UI/UX</option>
+                  </select>
                 </div>
 
                 <div className="space-y-2">

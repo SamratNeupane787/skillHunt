@@ -15,7 +15,11 @@ const EventSchema = new Schema(
       type: String,
       required: true,
     },
-    date: {
+    startDate: {
+      type: Date,
+      required: true,
+    },
+    endDate: {
       type: Date,
       required: true,
     },
@@ -29,6 +33,11 @@ const EventSchema = new Schema(
     },
     email: {
       type: String,
+      required: true,
+    },
+    categories: {
+      type: String,
+      enum: ["software", "hardware", "ui/ux"],
       required: true,
     },
   },

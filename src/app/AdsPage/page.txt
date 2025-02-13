@@ -243,3 +243,4 @@ export default function CreateAd() {
     </div>
   );
 }
+//replace the page,jsx file with this code

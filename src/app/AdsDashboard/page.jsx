@@ -14,6 +14,7 @@ export default function AdsDashboard() {
 
   useEffect(() => {
     if (status === "authenticated" && session?.user?.email) {
+      console.log("User email:", session.user.email); // Log the user email to check if it's correct
       fetchAds();
     }
   }, [status]);
@@ -34,6 +35,7 @@ export default function AdsDashboard() {
       }
 
       const data = await response.json();
+      console.log("Fetched Ads Data:", data); // Log the fetched data for debugging
       setAds(data);
     } catch (error) {
       console.error("Error fetching ads:", error);
@@ -85,6 +87,70 @@ export default function AdsDashboard() {
     } catch (error) {
       console.error("Error updating ad:", error);
       alert(error.message || "An error occurred while updating the ad.");
+    }
+  }
+
+  // Function to stop an ad
+  async function stopAd(id) {
+    const confirmation = window.confirm(
+      "Are you sure you want to stop this ad?"
+    );
+    if (!confirmation) return;
+
+    try {
+      const adToStop = ads.find((ad) => ad._id === id);
+      if (adToStop) {
+        adToStop.status = "stopped"; // Set the ad status to "stopped"
+
+        const response = await fetch(`${API_BASE_URL}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(adToStop),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to stop ad");
+        }
+
+        alert("Ad stopped successfully!");
+        fetchAds(); // Refresh the list of ads
+      }
+    } catch (error) {
+      console.error("Error stopping ad:", error);
+      alert(error.message || "An error occurred while stopping the ad.");
+    }
+  }
+
+  // Function to start an ad (restoring from "stopped" status)
+  async function startAd(id) {
+    const confirmation = window.confirm(
+      "Are you sure you want to start this ad?"
+    );
+    if (!confirmation) return;
+
+    try {
+      const adToStart = ads.find((ad) => ad._id === id);
+      if (adToStart) {
+        adToStart.status = "active"; // Set the ad status to "active"
+
+        const response = await fetch(`${API_BASE_URL}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(adToStart),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to start ad");
+        }
+
+        alert("Ad started successfully!");
+        fetchAds(); // Refresh the list of ads
+      }
+    } catch (error) {
+      console.error("Error starting ad:", error);
+      alert(error.message || "An error occurred while starting the ad.");
     }
   }
 
@@ -150,6 +216,14 @@ export default function AdsDashboard() {
                   <strong>Date:</strong>{" "}
                   {new Date(ad.date).toLocaleDateString()}
                 </p>
+                <p>
+                  <strong>Status:</strong>{" "}
+                  {ad.status === "stopped" ? (
+                    <span className="text-red-500">Stopped</span>
+                  ) : (
+                    <span className="text-green-500">Active</span>
+                  )}
+                </p>
                 <div className="flex gap-2 mt-2">
                   <button
                     onClick={() => setEditingAd(ad)}
@@ -163,6 +237,21 @@ export default function AdsDashboard() {
                   >
                     Delete
                   </button>
+                  {ad.status === "stopped" ? (
+                    <button
+                      onClick={() => startAd(ad._id)}
+                      className="px-4 py-2 bg-green-500 text-white rounded"
+                    >
+                      Start
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => stopAd(ad._id)}
+                      className="px-4 py-2 bg-gray-500 text-white rounded"
+                    >
+                      Stop
+                    </button>
+                  )}
                 </div>
               </div>
             ))

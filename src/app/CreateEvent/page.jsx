@@ -19,7 +19,6 @@ export default function CreateEvent() {
   const { toast } = useToast();
   const { data: session } = useSession();
 
-  console.log(session);
   const username = session?.user?.name;
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -30,6 +29,11 @@ export default function CreateEvent() {
   const [createdBy, setCreatedBy] = useState("");
 
   const router = useRouter();
+
+  const getCurrentDateTime = () => {
+    const now = new Date();
+    return now.toISOString().slice(0, 16);
+  };
 
   const handleCreateEvent = async (e) => {
     e.preventDefault();
@@ -50,8 +54,26 @@ export default function CreateEvent() {
       return;
     }
 
+    if (new Date(startDate) < new Date()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Start date cannot be in the past",
+      });
+      return;
+    }
+
+    if (new Date(endDate) <= new Date(startDate)) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "End date must be after the start date",
+      });
+      return;
+    }
+
     try {
-      const res = await fetch("/api/event", {
+      const res = await fetch("http://localhost:3000/api/event", {
         method: "POST",
         headers: {
           "Content-type": "application/json",
@@ -127,6 +149,7 @@ export default function CreateEvent() {
                     id="startDate"
                     type="datetime-local"
                     value={startDate}
+                    min={getCurrentDateTime()} // Prevent past dates
                     onChange={(e) => setStartDate(e.target.value)}
                   />
                 </div>
@@ -137,6 +160,7 @@ export default function CreateEvent() {
                     id="endDate"
                     type="datetime-local"
                     value={endDate}
+                    min={startDate || getCurrentDateTime()}
                     onChange={(e) => setEndDate(e.target.value)}
                   />
                 </div>

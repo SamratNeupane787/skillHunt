@@ -16,7 +16,7 @@ export async function GET(request) {
     if (createdBy) {
       ads = await AdsCreate.find({ createdBy }).sort({ createdAt: -1 });
     } else {
-      ads = await AdsCreate.find().sort({ createdAt: -1 }).limit(5);
+      ads = await AdsCreate.find().sort({ createdAt: -1 });
     }
 
     return new NextResponse(JSON.stringify(ads), { status: 200 });
@@ -33,13 +33,6 @@ export async function PUT(request) {
   try {
     const body = await request.json();
     const { id, title, description, date, location, imagePath } = body;
-
-    if (!id || !title || !description || !date || !location) {
-      return NextResponse.json(
-        { message: "All fields are required" },
-        { status: 400 }
-      );
-    }
 
     await connectMongoDB();
 
@@ -62,7 +55,6 @@ export async function PUT(request) {
     return NextResponse.json({ message: "Error updating ad" }, { status: 500 });
   }
 }
-//delete
 
 export async function DELETE(request) {
   const { searchParams } = new URL(request.url);
@@ -111,6 +103,7 @@ export async function POST(request) {
     const location = form.get("location");
     const image = form.get("image");
     const createdBy = form.get("createdBy");
+
     if (!title || !description || !date || !location || !image || !createdBy) {
       return NextResponse.json(
         { message: "All fields are required" },
@@ -126,6 +119,7 @@ export async function POST(request) {
       date,
       createdBy,
     });
+
     if (adsExist) {
       return NextResponse.json(
         { message: "Ad already exists" },
@@ -134,11 +128,8 @@ export async function POST(request) {
     }
 
     const fileBuffer = await image.arrayBuffer();
-    const uploadedImage = await cloudinary.uploader.upload_stream({
-      folder: "ads",
-    });
 
-    const uploadPromise = new Promise((resolve, reject) => {
+    const uploadResult = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         { folder: "ads" },
         (error, result) => {
@@ -149,17 +140,33 @@ export async function POST(request) {
       stream.end(Buffer.from(fileBuffer));
     });
 
-    const uploadedResult = await uploadPromise;
+    const moderationResult = await cloudinary.api.resources({
+      public_ids: [uploadResult.public_id],
+      moderation: "web",
+    });
 
-    console.log(uploadedResult);
+    if (
+      moderationResult.resources &&
+      moderationResult.resources[0].moderation
+    ) {
+      const moderationStatus =
+        moderationResult.resources[0].moderation[0].status;
+      if (moderationStatus === "reject") {
+        return NextResponse.json(
+          { message: "Image rejected due to NSFW content." },
+          { status: 400 }
+        );
+      }
+    }
 
+    // Save ad information into the database
     const newAd = await AdsCreate.create({
       title,
       description,
       location,
       date,
       createdBy,
-      imagePath: uploadedResult.secure_url,
+      imagePath: uploadResult.secure_url, // Use the URL from Cloudinary
     });
 
     return NextResponse.json(

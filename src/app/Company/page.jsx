@@ -74,9 +74,18 @@ const Page = async () => {
                         />
                       </CardHeader>
                       <CardContent className="p-6">
-                        <h3 className="font-semibold text-xl mb-4">
-                          {item.title}
-                        </h3>
+                        <div className=" flex flex-row items-center justify-between">
+                          <div>
+                            <h3 className="font-semibold text-xl mb-4">
+                              {item.title}
+                            </h3>
+                          </div>
+                          <div>
+                            <Button className="bg-blue-600 hover:bg-blue-700 text-white mt-3  rounded-full">
+                              View Submitted Projects
+                            </Button>
+                          </div>
+                        </div>
                         <div className="space-y-2 text-sm text-muted-foreground">
                           {/* <p className="flex items-center">
                             <Calendar className="mr-2 h-4 w-4" />

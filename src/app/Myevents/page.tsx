@@ -122,6 +122,11 @@ const Page = async () => {
                       {/* Conditional Deploy Now Button */}
                       {eventStatus === "Happening Now" && (
                         <div className="mt-4">
+                          <input
+                            type="text"
+                            className="mb-2 p-2 border rounded-md w-full"
+                            placeholder="Add github repo link"
+                          />
                           <Link href="/Deploy">
                             <button className="w-full bg-gradient-to-r from-green-400 to-blue-500 text-white py-2 rounded-md hover:from-green-500 hover:to-blue-600 transition duration-300 shadow-md">
                               Submit Project

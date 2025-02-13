@@ -22,8 +22,9 @@ import {
 } from "@/components/ui/card";
 import { CalendarIcon, Upload } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
-
 import { cn } from "libs/utils";
+import * as nsfwjs from "nsfwjs";
+import "@tensorflow/tfjs";
 
 export default function CreateAd() {
   const { data: session } = useSession();
@@ -34,6 +35,7 @@ export default function CreateAd() {
   const [date, setDate] = useState(null); // Make sure date is initialized as null
   const [image, setImage] = useState(null);
   const [isPaymentSuccessful, setIsPaymentSuccessful] = useState(false);
+  const [isNSFW, setIsNSFW] = useState(false); // State to track NSFW status
   const router = useRouter();
   const { toast } = useToast();
 
@@ -54,6 +56,39 @@ export default function CreateAd() {
       setImage(storedData.image || null);
     }
   }, []);
+
+  const checkNSFW = async (file) => {
+    const img = new Image();
+    const reader = new FileReader();
+
+    reader.onload = async (event) => {
+      img.src = event.target.result;
+
+      img.onload = async () => {
+        const model = await nsfwjs.load();
+        const predictions = await model.classify(img);
+
+        const nsfwScore = predictions.find(
+          (pred) => pred.className === "Porn" || pred.className === "Sexy"
+        )?.probability;
+
+        if (nsfwScore > 0.3) {
+          setIsNSFW(true);
+          toast({
+            variant: "destructive",
+            title: "NSFW Content Detected",
+            description: "Please upload a different image.",
+          });
+          alert("NSFW detected!");
+        } else {
+          setIsNSFW(false);
+          setImage(file);
+        }
+      };
+    };
+
+    reader.readAsDataURL(file);
+  };
 
   const handlePaymentRedirect = () => {
     if (!title || !description || !location || !date || !image) {
@@ -86,6 +121,16 @@ export default function CreateAd() {
         title: "Error",
         description: "Please fill all fields",
       });
+      return;
+    }
+
+    if (isNSFW) {
+      //toast({
+        //variant: "destructive",
+        //title: "NSFW Content Detected",
+        //description: "Please upload a different image.",
+      //});
+      alert(`NSFW detected! ${errorData.message}`);
       return;
     }
 
@@ -160,40 +205,13 @@ export default function CreateAd() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !date && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {date ? format(date, "PPP") : <span>Pick a date</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={date}
-                        onSelect={setDate}
-                        initialFocus
-                        className=" bg-black text-white"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-                <div className="space-y-2">
                   <Label htmlFor="image">Image</Label>
                   <div className="flex items-center space-x-2">
                     <Input
                       id="image"
                       type="file"
                       accept="image/*"
-                      onChange={(e) => setImage(e.target.files?.[0] || null)}
+                      onChange={(e) => checkNSFW(e.target.files?.[0] || null)}
                       className="hidden"
                       required
                     />
@@ -211,22 +229,12 @@ export default function CreateAd() {
                   </div>
                 </div>
 
-                {!isPaymentSuccessful ? (
-                  <Button
-                    type="button"
-                    className="w-full bg-blue-700 text-white"
-                    onClick={handlePaymentRedirect}
-                  >
-                    Pay with Khalti
-                  </Button>
-                ) : (
-                  <Button
-                    type="submit"
-                    className="w-full bg-blue-700 text-white"
-                  >
-                    Create Advertisement
-                  </Button>
-                )}
+                <Button
+                  type="submit"
+                  className="w-full bg-blue-700 text-white"
+                >
+                  Create Advertisement
+                </Button>
               </form>
             </CardContent>
           </Card>

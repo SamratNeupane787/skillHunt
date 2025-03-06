@@ -91,20 +91,13 @@ export default function CreateEvent() {
       });
 
       if (res.ok) {
+        alert("Event created successfully");
         router.push("/Company");
-        toast({
-          title: "Success",
-          description: "Event created successfully",
-        });
       } else {
         throw new Error("Failed to create event");
       }
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to create event. Please try again.",
-      });
+      alert("Failed to create event");
       console.error(error);
     }
   };

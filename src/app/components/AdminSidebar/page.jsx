@@ -16,25 +16,18 @@ export default function Sidebar() {
           Dashboard
         </Link>
         <Link
-          href="/admin/ads"
+          href="/Admin/ads"
           className="flex items-center px-6 py-3 text-blue-100 hover:bg-blue-700 transition-colors"
         >
           <BarChart2 className="mr-3" />
           Ads
         </Link>
         <Link
-          href="/admin/events"
+          href="/Admin/hackathon"
           className="flex items-center px-6 py-3 text-blue-100 hover:bg-blue-700 transition-colors"
         >
           <FileText className="mr-3" />
           Events
-        </Link>
-        <Link
-          href="/admin/settings"
-          className="flex items-center px-6 py-3 text-blue-100 hover:bg-blue-700 transition-colors"
-        >
-          <Settings className="mr-3" />
-          Settings
         </Link>
       </nav>
     </div>

@@ -22,8 +22,9 @@ import {
 } from "@/components/ui/card";
 import { CalendarIcon, Upload } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
-
 import { cn } from "libs/utils";
+import * as nsfwjs from "nsfwjs";
+import "@tensorflow/tfjs";
 
 export default function CreateAd() {
   const { data: session } = useSession();
@@ -31,9 +32,10 @@ export default function CreateAd() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
-  const [date, setDate] = useState(null); // Make sure date is initialized as null
+  const [date, setDate] = useState(null);
   const [image, setImage] = useState(null);
   const [isPaymentSuccessful, setIsPaymentSuccessful] = useState(false);
+  const [isNSFW, setIsNSFW] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -55,36 +57,51 @@ export default function CreateAd() {
     }
   }, []);
 
-  const handlePaymentRedirect = () => {
-    if (!title || !description || !location || !date || !image) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please fill all fields",
-      });
-      return;
-    }
+  const checkNSFW = async (file) => {
+    if (!file) return;
 
-    const adFormData = {
-      title,
-      description,
-      location,
-      date: date ? date.toISOString() : "",
-      image,
+    const img = new Image();
+    const reader = new FileReader();
+
+    reader.onload = async (event) => {
+      img.src = event.target.result;
+
+      img.onload = async () => {
+        const model = await nsfwjs.load();
+        const predictions = await model.classify(img);
+
+        const nsfwScore =
+          predictions.find(
+            (pred) => pred.className === "Porn" || pred.className === "Sexy"
+          )?.probability || 0;
+
+        if (nsfwScore > 0.3) {
+          setIsNSFW(true);
+          toast({
+            variant: "destructive",
+            title: "NSFW Content Detected",
+            description: "Please upload a different image.",
+          });
+          alert("NSFW detected!");
+        } else {
+          setIsNSFW(false);
+          setImage(file);
+        }
+      };
     };
 
-    localStorage.setItem("adFormData", JSON.stringify(adFormData));
-    router.push("/Khalti");
+    reader.readAsDataURL(file);
   };
 
   const handleCreateAd = async (e) => {
     e.preventDefault();
 
-    if (!title || !description || !location || !date || !image) {
+    if (!title || !description || !location || !date || !image || isNSFW) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Please fill all fields",
+        description:
+          "Please fill all fields and ensure the image is appropriate.",
       });
       return;
     }
@@ -193,7 +210,7 @@ export default function CreateAd() {
                       id="image"
                       type="file"
                       accept="image/*"
-                      onChange={(e) => setImage(e.target.files?.[0] || null)}
+                      onChange={(e) => checkNSFW(e.target.files?.[0] || null)}
                       className="hidden"
                       required
                     />
@@ -211,11 +228,14 @@ export default function CreateAd() {
                   </div>
                 </div>
 
+                {/* <Button type="submit" className="w-full bg-blue-700 text-white">
+                  Create Advertisement
+                </Button> */}
                 {!isPaymentSuccessful ? (
                   <Button
                     type="button"
                     className="w-full bg-blue-700 text-white"
-                    onClick={handlePaymentRedirect}
+                    onClick={() => router.push("/Khalti")}
                   >
                     Pay with Khalti
                   </Button>

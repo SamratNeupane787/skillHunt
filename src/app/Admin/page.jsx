@@ -33,12 +33,6 @@ function AdminDashboard() {
   // }
 
   useEffect(() => {
-    if (
-      session?.user?.email !== "samrat.neupane1713@gmail.com" &&
-      session?.user?.role !== "Google User"
-    ) {
-      router.push("/");
-    }
     async function fetchAds() {
       try {
         const response = await fetch("http://localhost:3000/api/ads");

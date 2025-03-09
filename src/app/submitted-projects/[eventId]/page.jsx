@@ -12,7 +12,6 @@ const SubmittedProjectsPage = ({ params }) => {
       try {
         const res = await fetch(`/api/submitprojects?eventId=${eventId}`);
         const data = await res.json();
-
         console.log(data);
         setProjects(data);
       } catch (error) {
@@ -21,7 +20,6 @@ const SubmittedProjectsPage = ({ params }) => {
         setLoading(false);
       }
     };
-
     fetchProjects();
   }, [eventId]);
 

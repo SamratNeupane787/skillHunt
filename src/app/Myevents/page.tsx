@@ -11,7 +11,6 @@ const Page = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [events, setEvents] = useState([]);
-  const [liveUrl, setLiveUrl] = useState(""); // To store the live URL
 
   useEffect(() => {
     if (status === "loading") return;
@@ -41,10 +40,6 @@ const Page = () => {
     fetchEvents();
   }, [session, status, router]);
 
-  const handleDeploy = () => {
-    router.push("/Deploy");
-  };
-
   const getEventStatus = (startDate, endDate) => {
     const now = new Date();
     const start = new Date(startDate);
@@ -54,16 +49,6 @@ const Page = () => {
     if (now >= start && now <= end) return "Happening Now";
     return "Ended";
   };
-
-  // Capture the live URL from the query params when redirected back
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const liveUrlFromParams = urlParams.get("liveUrl");
-
-    if (liveUrlFromParams) {
-      setLiveUrl(decodeURIComponent(liveUrlFromParams)); // Set live URL if exists in the query params
-    }
-  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center">
@@ -88,7 +73,7 @@ const Page = () => {
                     event={event}
                     eventStatus={eventStatus}
                     userEmail={session.user.email}
-                    liveUrl={liveUrl} // Pass liveUrl to EventCard
+                    initialTeamName={event.teamName || ""}
                   />
                 );
               })}
@@ -101,15 +86,14 @@ const Page = () => {
   );
 };
 
-const EventCard = ({ event, eventStatus, userEmail, liveUrl }) => {
+const EventCard = ({ event, eventStatus, userEmail, initialTeamName }) => {
   const [githubRepo, setGithubRepo] = useState("");
   const [teamName, setTeamName] = useState(initialTeamName);
   const [loading, setLoading] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false); // Track if the project is submitted
-  const router = useRouter();
+  const [liveUrl, setLiveUrl] = useState("");
 
   const handleSubmit = async () => {
-    if (!githubRepo || !teamName || !liveUrl) {
+    if (!githubRepo || !teamName) {
       alert("Please fill all fields");
       return;
     }
@@ -132,9 +116,9 @@ const EventCard = ({ event, eventStatus, userEmail, liveUrl }) => {
 
       if (response.ok) {
         alert("Project submitted successfully!");
-        setIsSubmitted(true); // Set isSubmitted to true when submission is successful
         setGithubRepo("");
         setTeamName("");
+        setLiveUrl("");
       } else {
         alert("Failed to submit project");
       }
@@ -194,16 +178,8 @@ const EventCard = ({ event, eventStatus, userEmail, liveUrl }) => {
           </p>
         </div>
 
-        {eventStatus === "Happening Now" && !isSubmitted && (
+        {eventStatus === "Happening Now" && (
           <div className="mt-4">
-            <button
-              onClick={() => {
-                router.push("/Deploy");
-              }}
-              className="w-full mb-2 bg-gradient-to-r from-red-400 to-blue-500 text-white py-2 rounded-md hover:from-green-500 hover:to-blue-600 transition duration-300 shadow-md"
-            >
-              Deploy Project
-            </button>
             <input
               type="text"
               value={githubRepo}
@@ -221,10 +197,9 @@ const EventCard = ({ event, eventStatus, userEmail, liveUrl }) => {
             <input
               type="text"
               value={liveUrl}
-              onChange={(e) => {}}
+              onChange={(e) => setLiveUrl(e.target.value)}
               className="mb-2 p-2 border rounded-md w-full"
-              placeholder="Live URL"
-              disabled
+              placeholder="Enter Live Url"
             />
             <button
               onClick={handleSubmit}
@@ -234,11 +209,6 @@ const EventCard = ({ event, eventStatus, userEmail, liveUrl }) => {
               {loading ? "Submitting..." : "Submit Project"}
             </button>
           </div>
-        )}
-
-        {/* Hide deploy and submit buttons after project is submitted */}
-        {isSubmitted && (
-          <p className="text-center text-green-500 mt-4">Project Submitted!</p>
         )}
       </CardContent>
     </Card>

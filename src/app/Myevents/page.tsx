@@ -11,6 +11,7 @@ const Page = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [events, setEvents] = useState([]);
+  const [liveUrl, setLiveUrl] = useState(""); // To store the live URL
 
   useEffect(() => {
     if (status === "loading") return;
@@ -40,6 +41,10 @@ const Page = () => {
     fetchEvents();
   }, [session, status, router]);
 
+  const handleDeploy = () => {
+    router.push("/Deploy");
+  };
+
   const getEventStatus = (startDate, endDate) => {
     const now = new Date();
     const start = new Date(startDate);
@@ -49,6 +54,16 @@ const Page = () => {
     if (now >= start && now <= end) return "Happening Now";
     return "Ended";
   };
+
+  // Capture the live URL from the query params when redirected back
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const liveUrlFromParams = urlParams.get("liveUrl");
+
+    if (liveUrlFromParams) {
+      setLiveUrl(decodeURIComponent(liveUrlFromParams)); // Set live URL if exists in the query params
+    }
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center">
@@ -73,7 +88,7 @@ const Page = () => {
                     event={event}
                     eventStatus={eventStatus}
                     userEmail={session.user.email}
-                    initialTeamName={event.teamName || ""}
+                    liveUrl={liveUrl} // Pass liveUrl to EventCard
                   />
                 );
               })}
@@ -86,14 +101,15 @@ const Page = () => {
   );
 };
 
-const EventCard = ({ event, eventStatus, userEmail, initialTeamName }) => {
+const EventCard = ({ event, eventStatus, userEmail, liveUrl }) => {
   const [githubRepo, setGithubRepo] = useState("");
-  const [teamName, setTeamName] = useState();
+  const [teamName, setTeamName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [liveUrl, setLiveUrl] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false); // Track if the project is submitted
+  const router = useRouter();
 
   const handleSubmit = async () => {
-    if (!githubRepo || !teamName) {
+    if (!githubRepo || !teamName || !liveUrl) {
       alert("Please fill all fields");
       return;
     }
@@ -116,9 +132,9 @@ const EventCard = ({ event, eventStatus, userEmail, initialTeamName }) => {
 
       if (response.ok) {
         alert("Project submitted successfully!");
+        setIsSubmitted(true); // Set isSubmitted to true when submission is successful
         setGithubRepo("");
         setTeamName("");
-        setLiveUrl("");
       } else {
         alert("Failed to submit project");
       }
@@ -178,7 +194,7 @@ const EventCard = ({ event, eventStatus, userEmail, initialTeamName }) => {
           </p>
         </div>
 
-        {eventStatus === "Happening Now" && (
+        {eventStatus === "Happening Now" && !isSubmitted && (
           <div className="mt-4">
             <button
               onClick={() => {
@@ -186,7 +202,7 @@ const EventCard = ({ event, eventStatus, userEmail, initialTeamName }) => {
               }}
               className="w-full mb-2 bg-gradient-to-r from-red-400 to-blue-500 text-white py-2 rounded-md hover:from-green-500 hover:to-blue-600 transition duration-300 shadow-md"
             >
-              Deploy your Project
+              Deploy Project
             </button>
             <input
               type="text"
@@ -205,9 +221,10 @@ const EventCard = ({ event, eventStatus, userEmail, initialTeamName }) => {
             <input
               type="text"
               value={liveUrl}
-              onChange={(e) => setLiveUrl(e.target.value)}
+              onChange={(e) => {}}
               className="mb-2 p-2 border rounded-md w-full"
-              placeholder="Enter Live Url"
+              placeholder="Live URL"
+              disabled
             />
             <button
               onClick={handleSubmit}
@@ -217,6 +234,11 @@ const EventCard = ({ event, eventStatus, userEmail, initialTeamName }) => {
               {loading ? "Submitting..." : "Submit Project"}
             </button>
           </div>
+        )}
+
+        {/* Hide deploy and submit buttons after project is submitted */}
+        {isSubmitted && (
+          <p className="text-center text-green-500 mt-4">Project Submitted!</p>
         )}
       </CardContent>
     </Card>

@@ -32,7 +32,12 @@ export default function CreateEvent() {
 
   const getCurrentDateTime = () => {
     const now = new Date();
-    return now.toISOString().slice(0, 16);
+    const localISOTime = new Date(
+      now.getTime() - now.getTimezoneOffset() * 60000
+    )
+      .toISOString()
+      .slice(0, 16);
+    return localISOTime;
   };
 
   const handleCreateEvent = async (e) => {
@@ -91,13 +96,20 @@ export default function CreateEvent() {
       });
 
       if (res.ok) {
-        alert("Event created successfully");
+        toast({
+          title: "Success",
+          description: "Event created successfully!",
+        });
         router.push("/Company");
       } else {
         throw new Error("Failed to create event");
       }
     } catch (error) {
-      alert("Failed to create event");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create event",
+      });
       console.error(error);
     }
   };

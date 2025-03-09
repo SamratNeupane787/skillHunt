@@ -1,4 +1,3 @@
-"use client";
 import React from "react";
 import { getServerSession } from "next-auth";
 import { options } from "../api/auth/[...nextauth]/options";
@@ -7,6 +6,7 @@ import { MapPin, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 const EventList = ({ data }) => {
   return (
@@ -90,7 +90,7 @@ const EventList = ({ data }) => {
   );
 };
 
-// Server Component (fetch data)
+// ✅ Move this to a Server Component (Remove "use client")
 const Page = async () => {
   const session = await getServerSession(options);
 

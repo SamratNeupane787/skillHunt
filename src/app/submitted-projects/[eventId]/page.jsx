@@ -48,7 +48,17 @@ const SubmittedProjectsPage = ({ params }) => {
               </p>
               <p>Submitted by: {proj.submitedBy}</p>
               <p>Submitted by: {proj.teamName}</p>
-              <p>Live url: {proj.liveUrl}</p>
+              <p>
+                Live url:
+                <a
+                  href={`https://${proj.liveUrl}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 underline"
+                >
+                  {proj.liveUrl}
+                </a>
+              </p>
             </li>
           ))}
         </ul>

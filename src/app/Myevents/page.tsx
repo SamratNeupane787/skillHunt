@@ -103,7 +103,7 @@ const Page = () => {
 
 const EventCard = ({ event, eventStatus, userEmail, liveUrl }) => {
   const [githubRepo, setGithubRepo] = useState("");
-  const [teamName, setTeamName] = useState(initialTeamName);
+  const [teamName, setTeamName] = useState();
   const [loading, setLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false); // Track if the project is submitted
   const router = useRouter();

@@ -202,7 +202,7 @@ const EventCard = ({ event, eventStatus, userEmail, liveUrl }) => {
               }}
               className="w-full mb-2 bg-gradient-to-r from-red-400 to-blue-500 text-white py-2 rounded-md hover:from-green-500 hover:to-blue-600 transition duration-300 shadow-md"
             >
-              Deploy Project
+              Deploy your Project
             </button>
             <input
               type="text"

@@ -1,44 +1,120 @@
-import { Montserrat } from "next/font/google";
+"use client";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { io } from "socket.io-client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Github } from "lucide-react";
+import { Fira_Code } from "next/font/google";
+import axios from "axios";
+import { useRouter } from "next/navigation"; // Import the useRouter hook
 
-const montserrat = Montserrat({ subsets: ["latin"] });
+const socket = io("http://localhost:9002");
 
-export default function UnderDevelopment() {
+const firaCode = Fira_Code({ subsets: ["latin"] });
+
+export default function Home() {
+  const [repoURL, setURL] = useState("");
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [projectId, setProjectId] = useState();
+  const [deployPreviewURL, setDeployPreviewURL] = useState();
+
+  const logContainerRef = useRef(null);
+  const router = useRouter(); // Initialize the router
+
+  const isValidURL = useMemo(() => {
+    if (!repoURL || repoURL.trim() === "") return [false, null];
+    const regex = new RegExp(
+      /^(?:https?:\/\/)?(?:www\.)?github\.com\/([^\/]+)\/([^\/]+)(?:\/)?$/
+    );
+    return [regex.test(repoURL), "Enter a valid GitHub Repository URL"];
+  }, [repoURL]);
+
+  const handleClickDeploy = useCallback(async () => {
+    setLoading(true);
+    const { data } = await axios.post(`http://localhost:9000/project`, {
+      gitURL: repoURL,
+      slug: projectId,
+    });
+
+    if (data && data.data) {
+      const { projectSlug, url } = data.data;
+      setProjectId(projectSlug);
+      setDeployPreviewURL(url);
+      console.log(`Subscribing to logs:${projectSlug}`);
+      socket.emit("subscribe", `logs:${projectSlug}`);
+
+      // Redirect to the event page with the deploy URL
+      window.open(`/Myevents?liveUrl=${encodeURIComponent(url)}`);
+    }
+  }, [projectId, repoURL, router]); // Add router to the dependency list
+
+  const handleSocketIncomingMessage = useCallback((message) => {
+    console.log(`[Incoming Socket Message]:`, typeof message, message);
+    const { log } = JSON.parse(message);
+    setLogs((prev) => [...prev, log]);
+    logContainerRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
+
+  useEffect(() => {
+    socket.on("message", handleSocketIncomingMessage);
+    return () => {
+      socket.off("message", handleSocketIncomingMessage);
+    };
+  }, [handleSocketIncomingMessage]);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl p-8 max-w-md w-full text-center shadow-2xl">
-        <div className="w-24 h-24 mx-auto mb-4 bg-blue-500 rounded-full flex items-center justify-center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            className="w-12 h-12 text-white"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-            />
-          </svg>
-        </div>
-        <h1
-          className={`${montserrat.className} text-4xl font-bold text-blue-600 mb-4`}
+    <main className="flex justify-center items-center h-screen bg-gradient-to-r from-teal-500 to-blue-500 p-6">
+      <div className="w-full max-w-lg bg-white p-8 rounded-lg shadow-lg">
+        <span className="flex justify-start items-center gap-4 mb-4">
+          <Github className="text-4xl text-gray-700" />
+          <Input
+            disabled={loading}
+            value={repoURL}
+            onChange={(e) => setURL(e.target.value)}
+            type="url"
+            placeholder="Enter GitHub Repo URL"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </span>
+        <Button
+          onClick={handleClickDeploy}
+          disabled={!isValidURL[0] || loading}
+          className="w-full py-3 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition duration-200"
         >
-          Under Development
-        </h1>
-        <p className="text-lg text-gray-600 mb-8">
-          We're working hard to bring you something amazing. Stay tuned!
-        </p>
-        <div className="flex justify-center space-x-4">
-          <a
-            href="/Myevents"
-            className="bg-blue-500 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-600 transition duration-300"
+          {loading ? <span className="animate-spin">🔄</span> : "Deploy"}
+        </Button>
+
+        {deployPreviewURL && (
+          <div className="mt-4 p-4 bg-gray-800 text-white rounded-lg">
+            <p>
+              Preview URL{" "}
+              <a
+                target="_blank"
+                className="text-teal-400 hover:text-teal-500"
+                href={deployPreviewURL}
+              >
+                {deployPreviewURL}
+              </a>
+            </p>
+          </div>
+        )}
+
+        {logs.length > 0 && (
+          <div
+            className={`${firaCode.className} text-sm text-green-500 mt-6 border border-green-500 rounded-lg p-6 h-72 overflow-y-auto bg-black`}
           >
-            Go BACK
-          </a>
-        </div>
+            <pre className="flex flex-col gap-2">
+              {logs.map((log, i) => (
+                <code
+                  ref={logs.length - 1 === i ? logContainerRef : undefined}
+                  key={i}
+                >{`> ${log}`}</code>
+              ))}
+            </pre>
+          </div>
+        )}
       </div>
-    </div>
+    </main>
   );
 }

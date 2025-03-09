@@ -20,6 +20,10 @@ const submitProjectSchema = new Schema(
       type: String,
       required: true,
     },
+    liveUrl:{
+      type:String,
+      required: true,
+    },
     submitedBy: {
       type: String,
       required: true,

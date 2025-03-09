@@ -39,3 +39,9 @@ export const GET = async (req) => {
     );
   }
 };
+
+export async function DELETE(request) {
+  const id = request.nextUrl.searchParams.get("id");
+  await CompanyEvent.findByIdAndDelete(id);
+  return NextResponse.json({ message: "Event deleted" }, { status: 200 });
+}

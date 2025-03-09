@@ -41,9 +41,9 @@ export default function CreateAd() {
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const paymentStatus = urlParams.get("status");
+    const paymentStatus = urlParams.get("data");
 
-    if (paymentStatus === "Completed") {
+    if (paymentStatus) {
       setIsPaymentSuccessful(true);
     }
 
@@ -234,10 +234,10 @@ export default function CreateAd() {
                 {!isPaymentSuccessful ? (
                   <Button
                     type="button"
-                    className="w-full bg-blue-700 text-white"
+                    className="w-full bg-green-700 text-white"
                     onClick={() => router.push("/Khalti")}
                   >
-                    Pay with Khalti
+                    Pay with Esewa
                   </Button>
                 ) : (
                   <Button

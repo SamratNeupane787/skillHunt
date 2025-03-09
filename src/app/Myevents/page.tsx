@@ -89,7 +89,7 @@ const EventCard = ({ event, eventStatus, userEmail }) => {
   const [githubRepo, setGithubRepo] = useState("");
   const [teamName, setTeamName] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const [liveUrl, setLiveUrl]  = useState("")
   const handleSubmit = async () => {
     if (!githubRepo || !teamName) {
       alert("Please fill all fields");
@@ -107,6 +107,7 @@ const EventCard = ({ event, eventStatus, userEmail }) => {
           eventId: event._id,
           githubRepo,
           teamName,
+          liveUrl,
           submitedBy: userEmail,
         }),
       });
@@ -115,6 +116,7 @@ const EventCard = ({ event, eventStatus, userEmail }) => {
         alert("Project submitted successfully!");
         setGithubRepo("");
         setTeamName("");
+        setLiveUrl("")
       } else {
         alert("Failed to submit project");
       }
@@ -187,6 +189,13 @@ const EventCard = ({ event, eventStatus, userEmail }) => {
               type="text"
               value={teamName}
               onChange={(e) => setTeamName(e.target.value)}
+              className="mb-2 p-2 border rounded-md w-full"
+              placeholder="Enter Team Name"
+            />
+            <input
+              type="text"
+              value={liveUrl}
+              onChange={(e) => setLiveUrl(e.target.value)}
               className="mb-2 p-2 border rounded-md w-full"
               placeholder="Enter Team Name"
             />

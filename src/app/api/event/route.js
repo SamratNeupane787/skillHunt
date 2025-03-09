@@ -52,9 +52,3 @@ export async function POST(request) {
   }
 }
 
-export async function DELETE(request) {
-  const id = request.nextUrl.searchParams.get("id");
-  await connectMongoDB();
-  await CompanyEvent.findByIdAndDelete(id);
-  return NextResponse.json({ message: "Event deleted" }, { status: 200 });
-}

@@ -52,7 +52,7 @@ export default function AdminEventsPage() {
               </thead>
               <tbody>
                 {events.map((event, index) => {
-                  const eventDate = event.startDate.substring(0, 10);
+                  const eventDate = event.startDate
                   let status = "Coming Soon";
                   if (eventDate < currentDate) {
                     status = "Completed";
@@ -75,7 +75,7 @@ export default function AdminEventsPage() {
                       <td className="py-4 px-4">
                         <div className="flex items-center text-gray-700">
                           <CalendarDays className="h-5 w-5 mr-2 text-indigo-500" />
-                          {event.createdAt.substring(0, 10)}
+                          {event.createdAt}
                         </div>
                       </td>
                       <td className="py-4 px-4">

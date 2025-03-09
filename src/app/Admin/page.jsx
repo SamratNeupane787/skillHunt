@@ -11,26 +11,13 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Sidebar from "../components/AdminSidebar/page";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 function AdminDashboard() {
   const [ads, setAds] = useState([]);
   const [events, setEvents] = useState([]);
+  const [users, setUsers] = useState([]);
   const { data: session } = useSession();
-
-  console.log(session);
-
-  const router = useRouter();
-
-  // useEffect(() => {
-  //   if (email !== "samrat.neupane17013@gmail.com") {
-  //     router.push("/");
-  //   }
-  // }, [session, router]);
-
-  // if (!session || session.email !== "samrat.neupane17013@gmail.com") {
-  //   return null; // Prevents flickering before redirect
-  // }
 
   useEffect(() => {
     async function fetchAds() {
@@ -49,16 +36,94 @@ function AdminDashboard() {
         const response = await fetch("http://localhost:3000/api/eventlisted");
         if (!response.ok) throw new Error("Failed to fetch events");
         const data = await response.json();
-        console.log(data);
         setEvents(data);
       } catch (error) {
         console.error("Error fetching events:", error);
       }
     }
 
+    async function fetchUsers() {
+      try {
+        const response = await fetch("http://localhost:3000/api/user");
+        if (!response.ok) throw new Error("Failed to fetch users");
+        const data = await response.json();
+        setUsers(data);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    }
+
     fetchAds();
     fetchEvents();
+    fetchUsers();
   }, []);
+
+  // Stop an ad (set status to "inactive")
+  const stopAd = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/ads`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status: "inactive" }),
+      });
+
+      if (!response.ok) throw new Error("Failed to stop ad");
+
+      setAds((prevAds) =>
+        prevAds.map((ad) =>
+          ad._id === id ? { ...ad, status: "inactive" } : ad
+        )
+      );
+    } catch (error) {
+      console.error("Error stopping ad:", error);
+    }
+  };
+
+  // Delete an ad
+  const deleteAd = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/ads?id=${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) throw new Error("Failed to delete ad");
+
+      setAds((prevAds) => prevAds.filter((ad) => ad._id !== id));
+    } catch (error) {
+      console.error("Error deleting ad:", error);
+    }
+  };
+
+  // Delete an event
+  const deleteEvent = async (id) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/eventlisted?id=${id}`,
+        { method: "DELETE" }
+      );
+
+      if (!response.ok) throw new Error("Failed to delete event");
+
+      setEvents((prevEvents) => prevEvents.filter((event) => event._id !== id));
+    } catch (error) {
+      console.error("Error deleting event:", error);
+    }
+  };
+
+  // Delete a user
+  const deleteUser = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/user?id=${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) throw new Error("Failed to delete user");
+
+      setUsers((prevUsers) => prevUsers.filter((user) => user._id !== id));
+    } catch (error) {
+      console.error("Error deleting user:", error);
+    }
+  };
 
   return (
     <div className="flex h-screen bg-blue-50">
@@ -69,11 +134,12 @@ function AdminDashboard() {
         </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Ads Section */}
           <Card className="bg-white shadow-lg">
             <CardHeader className="bg-blue-600 flex justify-between items-center px-6 py-4">
               <CardTitle className="text-white">Recent Ads</CardTitle>
               <button
-                className="bg-white text-blue-600 px-3 py-1 rounded-md font-semibold hover:bg-gray-200 transition"
+                className="bg-white text-green-600 px-3 py-1 rounded-md font-semibold hover:bg-gray-200 transition"
                 onClick={() => (window.location.href = "/Admin/ads")}
               >
                 View All
@@ -84,46 +150,48 @@ function AdminDashboard() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-blue-800">Title</TableHead>
-                      <TableHead className="text-blue-800">User</TableHead>
-                      <TableHead className="text-blue-800">
-                        Created At
-                      </TableHead>
-                      <TableHead className="text-blue-800">Status</TableHead>
+                      <TableHead>Title</TableHead>
+                      <TableHead>User</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {ads.slice(0, 5).map((ad) => (
-                      <TableRow key={ad.id} className="hover:bg-blue-50">
-                        <TableCell className="text-blue-700 font-medium">
-                          {ad.title}
-                        </TableCell>
-                        <TableCell className="text-blue-600">
-                          {ad.createdBy}
-                        </TableCell>
-                        <TableCell className="text-blue-600">
-                          {ad.createdAt}
-                        </TableCell>
-                        <TableCell className="text-green-600">
+                      <TableRow key={ad._id}>
+                        <TableCell>{ad.title}</TableCell>
+                        <TableCell>{ad.createdBy}</TableCell>
+                        <TableCell
+                          className={
+                            ad.status === "inactive"
+                              ? "text-red-600"
+                              : "text-green-600"
+                          }
+                        >
                           {ad.status}
+                        </TableCell>
+                        <TableCell>
+                          <Button onClick={() => stopAd(ad._id)}>Stop</Button>
+                          <Button onClick={() => deleteAd(ad._id)}>
+                            Delete
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               ) : (
-                <p className="text-gray-500 text-center py-4">
-                  No ads available.
-                </p>
+                <p>No ads available.</p>
               )}
             </CardContent>
           </Card>
 
+          {/* Events Section */}
           <Card className="bg-white shadow-lg">
-            <CardHeader className="bg-blue-600 flex justify-between items-center px-6 py-4">
+            <CardHeader className="bg-green-600 px-6 py-4">
               <CardTitle className="text-white">Recent Events</CardTitle>
               <button
-                className="bg-white text-blue-600 px-3 py-1 rounded-md font-semibold hover:bg-gray-200 transition"
+                className="bg-white text-green-600 px-3 py-1 rounded-md font-semibold hover:bg-gray-200 transition"
                 onClick={() => (window.location.href = "/Admin/hackathon")}
               >
                 View All
@@ -134,31 +202,68 @@ function AdminDashboard() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-blue-800">Title</TableHead>
-                      <TableHead className="text-blue-800">User</TableHead>
-                      <TableHead className="text-blue-800">Date</TableHead>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Location</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {events.slice(0, 5).map((event) => (
-                      <TableRow key={event.id} className="hover:bg-blue-50">
-                        <TableCell className="text-blue-700 font-medium">
-                          {event.title}
+                      <TableRow key={event._id}>
+                        <TableCell>{event.title}</TableCell>
+                        <TableCell>
+                          {event.startDate.substring(0, 10)}
                         </TableCell>
-                        <TableCell className="text-blue-600">
-                          {event.createdBy}
-                        </TableCell>
-                        <TableCell className="text-blue-600">
-                          {event.createdAt.substring(0, 10)}
+                        <TableCell>{event.location}</TableCell>
+                        <TableCell>
+                          <Button onClick={() => deleteEvent(event._id)}>
+                            Delete
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               ) : (
-                <p className="text-gray-500 text-center py-4">
-                  No events available.
-                </p>
+                <p>No events available.</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Users Section */}
+          <Card className="bg-white shadow-lg">
+            <CardHeader className="bg-red-600 px-6 py-4">
+              <CardTitle className="text-white">Users</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {users.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users.slice(0, 5).map((user) => (
+                      <TableRow key={user._id}>
+                        <TableCell>{user.name}</TableCell>
+                        <TableCell>{user.email}</TableCell>
+                        <TableCell>{user.role}</TableCell>
+                        <TableCell>
+                          <Button onClick={() => deleteUser(user._id)}>
+                            Delete
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <p>No users available.</p>
               )}
             </CardContent>
           </Card>

@@ -48,6 +48,7 @@ const SubmittedProjectsPage = ({ params }) => {
               </p>
               <p>Submitted by: {proj.submitedBy}</p>
               <p>Submitted by: {proj.teamName}</p>
+              <p>Live url: {proj.liveUrl}</p>
             </li>
           ))}
         </ul>

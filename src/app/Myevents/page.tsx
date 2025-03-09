@@ -13,7 +13,7 @@ const Page = () => {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
-    if (status === "loading") return; // Wait until session loads
+    if (status === "loading") return;
     if (!session) {
       router.push("/api/auth/signin?callbackUrl=/Company");
       return;
@@ -98,7 +98,7 @@ const EventCard = ({ event, eventStatus, userEmail }) => {
 
     setLoading(true);
     try {
-      const response = await fetch("/api/submitproject", {
+      const response = await fetch("/api/submitprojects", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -197,7 +197,7 @@ const EventCard = ({ event, eventStatus, userEmail }) => {
               value={liveUrl}
               onChange={(e) => setLiveUrl(e.target.value)}
               className="mb-2 p-2 border rounded-md w-full"
-              placeholder="Enter Team Name"
+              placeholder="Enter Live Url"
             />
             <button
               onClick={handleSubmit}

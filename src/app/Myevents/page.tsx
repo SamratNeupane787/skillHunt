@@ -73,6 +73,7 @@ const Page = () => {
                     event={event}
                     eventStatus={eventStatus}
                     userEmail={session.user.email}
+                    initialTeamName={event.teamName || ""}
                   />
                 );
               })}
@@ -85,11 +86,12 @@ const Page = () => {
   );
 };
 
-const EventCard = ({ event, eventStatus, userEmail }) => {
+const EventCard = ({ event, eventStatus, userEmail, initialTeamName }) => {
   const [githubRepo, setGithubRepo] = useState("");
-  const [teamName, setTeamName] = useState("");
+  const [teamName, setTeamName] = useState(initialTeamName);
   const [loading, setLoading] = useState(false);
-  const [liveUrl, setLiveUrl]  = useState("")
+  const [liveUrl, setLiveUrl] = useState("");
+
   const handleSubmit = async () => {
     if (!githubRepo || !teamName) {
       alert("Please fill all fields");
@@ -116,7 +118,7 @@ const EventCard = ({ event, eventStatus, userEmail }) => {
         alert("Project submitted successfully!");
         setGithubRepo("");
         setTeamName("");
-        setLiveUrl("")
+        setLiveUrl("");
       } else {
         alert("Failed to submit project");
       }

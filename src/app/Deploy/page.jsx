@@ -1,120 +1,103 @@
 "use client";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { io } from "socket.io-client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Github } from "lucide-react";
-import { Fira_Code } from "next/font/google";
+
+import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import axios from "axios";
-import { useRouter } from "next/navigation"; // Import the useRouter hook
+import io from "socket.io-client";
 
-const socket = io("http://localhost:9002");
+const socket = io("http://localhost:9000");
 
-const firaCode = Fira_Code({ subsets: ["latin"] });
-
-export default function Home() {
-  const [repoURL, setURL] = useState("");
-  const [logs, setLogs] = useState([]);
+const Deploy = () => {
+  const [repoURL, setRepoURL] = useState("");
   const [loading, setLoading] = useState(false);
-  const [projectId, setProjectId] = useState();
-  const [deployPreviewURL, setDeployPreviewURL] = useState();
-
-  const logContainerRef = useRef(null);
-  const router = useRouter(); // Initialize the router
-
-  const isValidURL = useMemo(() => {
-    if (!repoURL || repoURL.trim() === "") return [false, null];
-    const regex = new RegExp(
-      /^(?:https?:\/\/)?(?:www\.)?github\.com\/([^\/]+)\/([^\/]+)(?:\/)?$/
-    );
-    return [regex.test(repoURL), "Enter a valid GitHub Repository URL"];
-  }, [repoURL]);
+  const [projectId, setProjectId] = useState("");
+  const [deployPreviewURL, setDeployPreviewURL] = useState("");
+  const router = useRouter();
 
   const handleClickDeploy = useCallback(async () => {
-    setLoading(true);
-    const { data } = await axios.post(`http://localhost:9000/project`, {
-      gitURL: repoURL,
-      slug: projectId,
-    });
-
-    if (data && data.data) {
-      const { projectSlug, url } = data.data;
-      setProjectId(projectSlug);
-      setDeployPreviewURL(url);
-      console.log(`Subscribing to logs:${projectSlug}`);
-      socket.emit("subscribe", `logs:${projectSlug}`);
-
-      // Redirect to the event page with the deploy URL
-      window.open(`/Myevents?liveUrl=${encodeURIComponent(url)}`);
+    if (!repoURL) {
+      alert("Please enter a GitHub repository URL.");
+      return;
     }
-  }, [projectId, repoURL, router]); // Add router to the dependency list
 
-  const handleSocketIncomingMessage = useCallback((message) => {
-    console.log(`[Incoming Socket Message]:`, typeof message, message);
-    const { log } = JSON.parse(message);
-    setLogs((prev) => [...prev, log]);
-    logContainerRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, []);
+    setLoading(true);
+    try {
+      const { data } = await axios.post(`http://localhost:9000/project`, {
+        gitURL: repoURL,
+        slug: projectId,
+      });
 
-  useEffect(() => {
-    socket.on("message", handleSocketIncomingMessage);
-    return () => {
-      socket.off("message", handleSocketIncomingMessage);
-    };
-  }, [handleSocketIncomingMessage]);
+      if (data && data.data) {
+        const { projectSlug, url } = data.data;
+        setProjectId(projectSlug);
+        setDeployPreviewURL(url);
+        console.log(`Subscribing to logs:${projectSlug}`);
+        socket.emit("subscribe", `logs:${projectSlug}`);
+
+        // Navigate to Myevents page with repoURL and deployPreviewURL
+        window.open(
+          `/Myevents?githuburl=${encodeURIComponent(
+            repoURL
+          )}&liveUrl=${encodeURIComponent(url)}`
+        );
+      }
+    } catch (error) {
+      console.error("Deployment error:", error);
+      alert("Failed to deploy project");
+    } finally {
+      setLoading(false);
+    }
+  }, [repoURL, projectId, router]);
 
   return (
-    <main className="flex justify-center items-center h-screen bg-gradient-to-r from-teal-500 to-blue-500 p-6">
-      <div className="w-full max-w-lg bg-white p-8 rounded-lg shadow-lg">
-        <span className="flex justify-start items-center gap-4 mb-4">
-          <Github className="text-4xl text-gray-700" />
-          <Input
-            disabled={loading}
-            value={repoURL}
-            onChange={(e) => setURL(e.target.value)}
-            type="url"
-            placeholder="Enter GitHub Repo URL"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </span>
-        <Button
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-gray-900 via-black to-gray-900 text-white p-6">
+      <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-lg max-w-md w-full">
+        <h1 className="text-2xl font-bold mb-4 text-center">
+          🚀 Deploy Your Project
+        </h1>
+
+        <input
+          type="text"
+          value={repoURL}
+          onChange={(e) => setRepoURL(e.target.value)}
+          placeholder="Enter GitHub repo URL"
+          className="p-3 w-full text-black border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+        />
+
+        <button
           onClick={handleClickDeploy}
-          disabled={!isValidURL[0] || loading}
-          className="w-full py-3 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition duration-200"
+          className="w-full mt-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 flex items-center justify-center"
+          disabled={loading}
         >
-          {loading ? <span className="animate-spin">🔄</span> : "Deploy"}
-        </Button>
-
-        {deployPreviewURL && (
-          <div className="mt-4 p-4 bg-gray-800 text-white rounded-lg">
-            <p>
-              Preview URL{" "}
-              <a
-                target="_blank"
-                className="text-teal-400 hover:text-teal-500"
-                href={deployPreviewURL}
+          {loading ? (
+            <span className="flex items-center gap-2">
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                viewBox="0 0 24 24"
               >
-                {deployPreviewURL}
-              </a>
-            </p>
-          </div>
-        )}
-
-        {logs.length > 0 && (
-          <div
-            className={`${firaCode.className} text-sm text-green-500 mt-6 border border-green-500 rounded-lg p-6 h-72 overflow-y-auto bg-black`}
-          >
-            <pre className="flex flex-col gap-2">
-              {logs.map((log, i) => (
-                <code
-                  ref={logs.length - 1 === i ? logContainerRef : undefined}
-                  key={i}
-                >{`> ${log}`}</code>
-              ))}
-            </pre>
-          </div>
-        )}
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="white"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="white"
+                  d="M4 12a8 8 0 018-8v8H4z"
+                ></path>
+              </svg>
+              Deploying...
+            </span>
+          ) : (
+            "Deploy"
+          )}
+        </button>
       </div>
-    </main>
+    </div>
   );
-}
+};
+
+export default Deploy;

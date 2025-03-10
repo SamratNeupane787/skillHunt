@@ -66,3 +66,91 @@ export async function DELETE(request) {
     return NextResponse.json({ message: "Error deleting ad" }, { status: 500 });
   }
 }
+
+
+export async function POST(request) {
+  try {
+    const form = await request.formData();
+    const title = form.get("title");
+    const description = form.get("description");
+    const date = form.get("date");
+    const location = form.get("location");
+    const image = form.get("image");
+    const createdBy = form.get("createdBy");
+
+    if (!title || !description || !date || !location || !image || !createdBy) {
+      return NextResponse.json(
+        { message: "All fields are required" },
+        { status: 400 }
+      );
+    }
+
+    await connectMongoDB();
+
+    const adsExist = await AdsCreate.findOne({
+      title,
+      description,
+      date,
+      createdBy,
+    });
+
+    if (adsExist) {
+      return NextResponse.json(
+        { message: "Ad already exists" },
+        { status: 409 }
+      );
+    }
+
+    const fileBuffer = await image.arrayBuffer();
+
+    const uploadResult = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: "ads" },
+        (error, result) => {
+          if (result) resolve(result);
+          else reject(error);
+        }
+      );
+      stream.end(Buffer.from(fileBuffer));
+    });
+
+    const moderationResult = await cloudinary.api.resources({
+      public_ids: [uploadResult.public_id],
+      moderation: "web",
+    });
+
+    if (
+      moderationResult.resources &&
+      moderationResult.resources[0].moderation
+    ) {
+      const moderationStatus =
+        moderationResult.resources[0].moderation[0].status;
+      if (moderationStatus === "reject") {
+        return NextResponse.json(
+          { message: "Image rejected due to NSFW content." },
+          { status: 400 }
+        );
+      }
+    }
+
+    const newAd = await AdsCreate.create({
+      title,
+      description,
+      location,
+      date,
+      createdBy,
+      imagePath: uploadResult.secure_url, 
+    });
+
+    return NextResponse.json(
+      { message: "Ad created successfully", ad: newAd },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("Server Error:", error);
+    return NextResponse.json(
+      { message: "Server error", error: error.message },
+      { status: 500 }
+    );
+  }
+}

@@ -58,7 +58,6 @@ function AdminDashboard() {
     fetchUsers();
   }, []);
 
-  // Stop an ad (set status to "inactive")
   const stopAd = async (id) => {
     try {
       const response = await fetch(`http://localhost:3000/api/ads`, {
@@ -79,7 +78,6 @@ function AdminDashboard() {
     }
   };
 
-  // Delete an ad
   const deleteAd = async (id) => {
     try {
       const response = await fetch(`http://localhost:3000/api/ads?id=${id}`, {
@@ -94,7 +92,6 @@ function AdminDashboard() {
     }
   };
 
-  // Delete an event
   const deleteEvent = async (id) => {
     try {
       const response = await fetch(
@@ -110,7 +107,6 @@ function AdminDashboard() {
     }
   };
 
-  // Delete a user
   const deleteUser = async (id) => {
     try {
       const response = await fetch(`http://localhost:3000/api/user?id=${id}`, {
@@ -213,7 +209,7 @@ function AdminDashboard() {
                       <TableRow key={event._id}>
                         <TableCell>{event.title}</TableCell>
                         <TableCell>
-                          {event.startDate.substring(0, 10)}
+                          {event.startDate}
                         </TableCell>
                         <TableCell>{event.location}</TableCell>
                         <TableCell>

@@ -154,7 +154,7 @@ export default function CreateEvent() {
                     id="startDate"
                     type="datetime-local"
                     value={startDate}
-                    min={getCurrentDateTime()} // Prevent past dates
+                    min={getCurrentDateTime()+1} 
                     onChange={(e) => setStartDate(e.target.value)}
                   />
                 </div>

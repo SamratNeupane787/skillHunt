@@ -48,7 +48,7 @@ const page = async () => {
           {/* Event Actions */}
           <div className="flex flex-row items-center justify-center mt-6">
             <h2 className="text-2xl font-semibold mr-4">
-              Showing 10 Hackathons:
+              Showing Hackathons:
             </h2>
             <Link href="/Myevents">
               <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 shadow-md">

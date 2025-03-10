@@ -13,9 +13,11 @@ const Page = () => {
   const searchParams = useSearchParams();
 
   const [events, setEvents] = useState([]);
-  const [liveUrl, setLiveUrl] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [hasOngoingEvent, setHasOngoingEvent] = useState(false); // New state to track ongoing event
+  const [selectedEvent, setSelectedEvent] = useState(null); // Track selected event
+  const [githubRepo, setGithubRepo] = useState(""); // GitHub URL
+  const [liveUrl, setLiveUrl] = useState(""); // Live URL
+  const [teamName, setTeamName] = useState(""); // Team Name
+  const [submittedEvents, setSubmittedEvents] = useState({}); // Track submission for each event
 
   useEffect(() => {
     if (status === "loading") return;
@@ -43,23 +45,24 @@ const Page = () => {
 
       const fetchedEvents = await Promise.all(eventDetailsPromises);
       setEvents(fetchedEvents);
-
-      // Check if any event is "Happening Now" for this user
-      const hasActiveEvent = fetchedEvents.some(
-        (event) =>
-          getEventStatus(event.startDate, event.endDate) === "Happening Now"
-      );
-      setHasOngoingEvent(hasActiveEvent);
     };
 
     fetchEvents();
   }, [session, status, router]);
 
   useEffect(() => {
-    const liveUrlFromParams = searchParams.get("liveUrl");
-    if (liveUrlFromParams) {
+    const githubUrlFromParams = searchParams.get("githuburl");
+    const liveUrlFromParams = searchParams.get("liveurl");
+
+    if (githubUrlFromParams && liveUrlFromParams) {
+      setGithubRepo(decodeURIComponent(githubUrlFromParams));
       setLiveUrl(decodeURIComponent(liveUrlFromParams));
     }
+
+    // Load previously submitted events from localStorage
+    const storedSubmittedEvents =
+      JSON.parse(localStorage.getItem("submittedEvents")) || {};
+    setSubmittedEvents(storedSubmittedEvents);
   }, [searchParams]);
 
   const getEventStatus = (startDate, endDate) => {
@@ -72,6 +75,31 @@ const Page = () => {
     return "Ended";
   };
 
+  const handleEventClick = (event) => {
+    setSelectedEvent(event); // Set selected event when the card is clicked
+  };
+
+  const handleDeployRedirect = (event) => {
+    window.open(`/Deploy?eventId=${event._id}`, "_blank");
+  };
+
+  const handleSubmit = async (eventId) => {
+    if (!githubRepo || !teamName || !liveUrl) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    // Mark the event as submitted
+    setSubmittedEvents((prev) => {
+      const updated = { ...prev, [eventId]: true };
+
+      // Persist the submission status in localStorage
+      localStorage.setItem("submittedEvents", JSON.stringify(updated));
+
+      return updated;
+    });
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
       {events.length > 0 ? (
@@ -82,17 +110,22 @@ const Page = () => {
                 event.startDate,
                 event.endDate
               );
-
               return (
                 <EventCard
                   key={event._id}
                   event={event}
                   eventStatus={eventStatus}
-                  userEmail={session.user.email}
+                  selectedEvent={selectedEvent}
+                  onEventClick={handleEventClick} // Event card click handler
+                  githubRepo={githubRepo}
                   liveUrl={liveUrl}
-                  setLoading={setLoading}
-                  loading={loading}
-                  hasOngoingEvent={hasOngoingEvent} // Pass new state
+                  teamName={teamName}
+                  setGithubRepo={setGithubRepo}
+                  setLiveUrl={setLiveUrl}
+                  setTeamName={setTeamName}
+                  isSubmitted={submittedEvents[event._id]} // Check if event is submitted
+                  handleSubmit={() => handleSubmit(event._id)} // Pass eventId to handle submission
+                  handleDeployRedirect={handleDeployRedirect}
                 />
               );
             })}
@@ -108,55 +141,25 @@ const Page = () => {
 const EventCard = ({
   event,
   eventStatus,
-  userEmail,
+  selectedEvent,
+  onEventClick,
+  githubRepo,
   liveUrl,
-  setLoading,
-  loading,
-  hasOngoingEvent,
+  teamName,
+  setGithubRepo,
+  setLiveUrl,
+  setTeamName,
+  isSubmitted,
+  handleSubmit,
+  handleDeployRedirect,
 }) => {
-  const [githubRepo, setGithubRepo] = useState("");
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const router = useRouter();
-
-  const handleSubmit = async (eventId) => {
-    if (!githubRepo || !event.teamName || !liveUrl) {
-      alert("Please fill all fields");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await fetch("/api/submitprojects", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          eventId,
-          githubRepo,
-          teamName: event.teamName,
-          liveUrl,
-          submitedBy: userEmail,
-        }),
-      });
-
-      if (response.ok) {
-        alert("Project submitted successfully!");
-        setIsSubmitted(true);
-        setGithubRepo("");
-      } else {
-        alert("Failed to submit project");
-      }
-    } catch (error) {
-      console.error("Submission error:", error);
-      alert("Error submitting project");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const isSelected = selectedEvent?._id === event._id;
 
   return (
-    <Card className="overflow-hidden shadow-lg transition-shadow">
+    <Card
+      className="overflow-hidden shadow-lg transition-shadow cursor-pointer"
+      onClick={() => onEventClick(event)} // Trigger the event selection
+    >
       <CardHeader className="p-0">
         <Image
           src="/placeholder.png"
@@ -203,46 +206,45 @@ const EventCard = ({
           </p>
         </div>
 
-        {/* Only allow project submission if user has no other ongoing event */}
-        {eventStatus === "Happening Now" && !isSubmitted && (
-          <div className="mt-4">
+        {isSelected && eventStatus === "Happening Now" && !isSubmitted && (
+          <div className="mt-4 space-y-4">
             <button
-              onClick={() =>
-                router.push(
-                  `/Deploy?githuburl=${encodeURIComponent(githubRepo)}`
-                )
-              }
-              className={`w-full mb-2 bg-gradient-to-r from-red-400 to-blue-500 text-white py-2 rounded-md 
-              transition duration-300 shadow-md ${
-                hasOngoingEvent
-                  ? "opacity-50 cursor-not-allowed"
-                  : "hover:from-green-500 hover:to-blue-600"
-              }`}
-              disabled={hasOngoingEvent}
+              onClick={() => handleDeployRedirect(event)} // Open /Deploy page in new tab
+              className="w-full bg-gradient-to-r from-blue-500 to-green-500 text-white py-2 rounded-md transition duration-300 shadow-md hover:from-blue-600 hover:to-green-600"
             >
-              Deploy Project
+              Deploy Now
             </button>
+          </div>
+        )}
 
+        {isSelected && eventStatus === "Happening Now" && !isSubmitted && (
+          <div className="mt-4 space-y-4">
             <input
               type="text"
               value={githubRepo}
               onChange={(e) => setGithubRepo(e.target.value)}
-              className="mb-2 p-2 border rounded-md w-full"
+              className="w-full p-2 mb-4 border border-gray-300 rounded-md"
               placeholder="GitHub repo link"
-              disabled={hasOngoingEvent}
             />
-
+            <input
+              type="text"
+              value={teamName}
+              onChange={(e) => setTeamName(e.target.value)}
+              className="w-full p-2 mb-4 border border-gray-300 rounded-md"
+              placeholder="Team Name"
+            />
+            <input
+              type="text"
+              value={liveUrl}
+              onChange={(e) => setLiveUrl(e.target.value)}
+              className="w-full p-2 mb-4 border border-gray-300 rounded-md"
+              placeholder="Live project URL"
+            />
             <button
-              onClick={() => handleSubmit(event._id)}
-              className={`w-full bg-gradient-to-r from-green-400 to-blue-500 text-white py-2 rounded-md transition duration-300 shadow-md
-              ${
-                loading || hasOngoingEvent
-                  ? "opacity-50 cursor-not-allowed"
-                  : "hover:from-green-500 hover:to-blue-600"
-              }`}
-              disabled={loading || hasOngoingEvent}
+              onClick={handleSubmit}
+              className="w-full bg-gradient-to-r from-green-400 to-blue-500 text-white py-2 rounded-md transition duration-300 shadow-md hover:from-green-500 hover:to-blue-600"
             >
-              {loading ? "Submitting..." : "Submit Project"}
+              Submit Project
             </button>
           </div>
         )}

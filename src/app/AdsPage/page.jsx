@@ -235,7 +235,7 @@ export default function CreateAd() {
                   <Button
                     type="button"
                     className="w-full bg-green-700 text-white"
-                    onClick={() => router.push("/Khalti")}
+                    onClick={() => router.push("/Esewa")}
                   >
                     Pay with Esewa
                   </Button>

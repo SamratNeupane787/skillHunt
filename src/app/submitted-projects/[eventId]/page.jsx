@@ -49,7 +49,7 @@ const SubmittedProjectsPage = ({ params }) => {
               <p>
                 Live url:
                 <a
-                  href={`https://${proj.liveUrl}`}
+                  href={`${proj.liveUrl}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-500 underline"

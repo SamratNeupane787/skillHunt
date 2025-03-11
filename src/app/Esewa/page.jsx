@@ -40,6 +40,10 @@ export default function EsewaPayment() {
   const [error, setError] = useState();
   const { toast } = useToast();
 
+   useEffect(() => {
+     // Set a random transaction ID only once when the component mounts
+     setTransactionId(Math.floor(Math.random() * 1000000) + 1);
+   }, []);
     useEffect(() => {
       const fetchDummyData = async () => {
         try {
@@ -138,7 +142,9 @@ export default function EsewaPayment() {
       <Card className="w-full max-w-md mx-4">
         <CardHeader>
           <CardTitle>eSewa Payment</CardTitle>
-          <CardDescription>Enter payment details for eSewa</CardDescription>
+          <CardDescription>
+            Enter payment details for eSewa "Rs 10 per day"
+          </CardDescription>
         </CardHeader>
         <form onSubmit={handlePayment}>
           <CardContent className="space-y-4">
@@ -167,7 +173,7 @@ export default function EsewaPayment() {
                 value={productName}
                 onChange={(e) => setProductName(e.target.value)}
                 required
-                placeholder="Enter product name"
+                placeholder="Enter your ads title"
                 maxLength={100}
               />
             </div>
@@ -176,7 +182,6 @@ export default function EsewaPayment() {
               <Input
                 id="transactionId"
                 value={transactionId}
-                onChange={(e) => setTransactionId(e.target.value)}
                 required
                 placeholder="Enter transaction ID"
                 maxLength={50}

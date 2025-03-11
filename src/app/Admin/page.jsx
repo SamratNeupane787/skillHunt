@@ -58,23 +58,22 @@ function AdminDashboard() {
     fetchUsers();
   }, []);
 
-  const stopAd = async (id) => {
+  const updateAdStatus = async (id, status) => {
     try {
       const response = await fetch(`http://localhost:3000/api/ads`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status: "inactive" }),
+        body: JSON.stringify({ id, status }),
       });
 
-      if (!response.ok) throw new Error("Failed to stop ad");
+      if (!response.ok)
+        throw new Error(`Failed to update ad status to ${status}`);
 
       setAds((prevAds) =>
-        prevAds.map((ad) =>
-          ad._id === id ? { ...ad, status: "inactive" } : ad
-        )
+        prevAds.map((ad) => (ad._id === id ? { ...ad, status } : ad))
       );
     } catch (error) {
-      console.error("Error stopping ad:", error);
+      console.error("Error updating ad status:", error);
     }
   };
 
@@ -134,12 +133,6 @@ function AdminDashboard() {
           <Card className="bg-white shadow-lg">
             <CardHeader className="bg-blue-600 flex justify-between items-center px-6 py-4">
               <CardTitle className="text-white">Recent Ads</CardTitle>
-              <button
-                className="bg-white text-green-600 px-3 py-1 rounded-md font-semibold hover:bg-gray-200 transition"
-                onClick={() => (window.location.href = "/Admin/ads")}
-              >
-                View All
-              </button>
             </CardHeader>
             <CardContent>
               {ads.length > 0 ? (
@@ -166,9 +159,26 @@ function AdminDashboard() {
                         >
                           {ad.status}
                         </TableCell>
-                        <TableCell>
-                          <Button onClick={() => stopAd(ad._id)}>Stop</Button>
-                          <Button onClick={() => deleteAd(ad._id)}>
+                        <TableCell className="space-x-2 flex flex-wrap">
+                          {ad.status === "inactive" ? (
+                            <Button
+                              onClick={() => updateAdStatus(ad._id, "active")}
+                              className="bg-green-500 hover:bg-green-700 text-white px-3 py-1 rounded-md"
+                            >
+                              Start
+                            </Button>
+                          ) : (
+                            <Button
+                              onClick={() => updateAdStatus(ad._id, "inactive")}
+                              className="bg-yellow-500 hover:bg-yellow-700 text-white px-3 py-1 rounded-md"
+                            >
+                              Stop
+                            </Button>
+                          )}
+                          <Button
+                            onClick={() => deleteAd(ad._id)}
+                            className="bg-red-500 hover:bg-red-700 text-white px-3 py-1 rounded-md"
+                          >
                             Delete
                           </Button>
                         </TableCell>
@@ -186,12 +196,6 @@ function AdminDashboard() {
           <Card className="bg-white shadow-lg">
             <CardHeader className="bg-green-600 px-6 py-4">
               <CardTitle className="text-white">Recent Events</CardTitle>
-              <button
-                className="bg-white text-green-600 px-3 py-1 rounded-md font-semibold hover:bg-gray-200 transition"
-                onClick={() => (window.location.href = "/Admin/hackathon")}
-              >
-                View All
-              </button>
             </CardHeader>
             <CardContent>
               {events.length > 0 ? (
@@ -208,12 +212,13 @@ function AdminDashboard() {
                     {events.slice(0, 5).map((event) => (
                       <TableRow key={event._id}>
                         <TableCell>{event.title}</TableCell>
-                        <TableCell>
-                          {event.startDate}
-                        </TableCell>
+                        <TableCell>{event.startDate}</TableCell>
                         <TableCell>{event.location}</TableCell>
                         <TableCell>
-                          <Button onClick={() => deleteEvent(event._id)}>
+                          <Button
+                            onClick={() => deleteEvent(event._id)}
+                            className="bg-red-500 hover:bg-red-700 text-white px-3 py-1 rounded-md"
+                          >
                             Delete
                           </Button>
                         </TableCell>
@@ -233,34 +238,7 @@ function AdminDashboard() {
               <CardTitle className="text-white">Users</CardTitle>
             </CardHeader>
             <CardContent>
-              {users.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.slice(0, 5).map((user) => (
-                      <TableRow key={user._id}>
-                        <TableCell>{user.name}</TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>{user.role}</TableCell>
-                        <TableCell>
-                          <Button onClick={() => deleteUser(user._id)}>
-                            Delete
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <p>No users available.</p>
-              )}
+              <p>🚀 User management section coming soon!</p>
             </CardContent>
           </Card>
         </div>

@@ -6,7 +6,7 @@ import Happening, {
 } from "./components/Happening/Happening";
 import Student from "./components/studentSection/Student";
 import Company from "./components/companySection/Company";
-import AdPopup from "./components/Adpopup/Adpopup"; 
+import AdPopup from "./components/Adpopup/Adpopup";
 
 export default function Home() {
   const [ads, setAds] = useState([]);
@@ -16,13 +16,21 @@ export default function Home() {
     async function fetchAds() {
       try {
         const response = await fetch("/api/ads");
+        if (!response.ok) throw new Error("Failed to fetch ads");
+
         const data = await response.json();
         console.log("Fetched Ads:", data);
 
-        if (data && data.length > 0) {
-          setAds(data);
-          const randomAd = data[Math.floor(Math.random() * data.length)]; 
+        // ✅ Only include ads that are active
+        const activeAds = data.filter((ad) => ad.status === "active");
+
+        if (activeAds.length > 0) {
+          setAds(activeAds);
+          const randomAd =
+            activeAds[Math.floor(Math.random() * activeAds.length)];
           setCurrentAd(randomAd);
+        } else {
+          setCurrentAd(null); // If no active ads, no popup
         }
       } catch (error) {
         console.error("Error fetching ads:", error);

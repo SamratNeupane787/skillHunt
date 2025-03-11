@@ -15,7 +15,7 @@ const Page = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [githubRepo, setGithubRepo] = useState("");
   const [liveUrl, setLiveUrl] = useState("");
-  const [teamName, setTeamName] = useState("");
+  const [teamNames, setTeamNames] = useState({});
   const [submittedEvents, setSubmittedEvents] = useState({});
 
   useEffect(() => {
@@ -44,6 +44,13 @@ const Page = () => {
 
       const fetchedEvents = await Promise.all(eventDetailsPromises);
       setEvents(fetchedEvents);
+
+      // Autofill team names for each event
+      const teamNamesMap = {};
+      fetchedEvents.forEach((event) => {
+        teamNamesMap[event._id] = event.teamName || "";
+      });
+      setTeamNames(teamNamesMap);
     };
 
     fetchEvents();
@@ -52,11 +59,9 @@ const Page = () => {
   useEffect(() => {
     const githubUrlFromParams = searchParams.get("githuburl");
     const liveUrlFromParams = searchParams.get("liveurl");
-    const teamNameFromParams = searchParams.get("teamname");
 
     if (githubUrlFromParams)
       setGithubRepo(decodeURIComponent(githubUrlFromParams));
-    if (teamNameFromParams) setTeamName(decodeURIComponent(teamNameFromParams));
 
     if (liveUrlFromParams) {
       let formattedLiveUrl = decodeURIComponent(liveUrlFromParams);
@@ -91,7 +96,7 @@ const Page = () => {
   };
 
   const handleSubmit = async (eventId) => {
-    if (!githubRepo || !teamName || !liveUrl) {
+    if (!githubRepo || !teamNames[eventId] || !liveUrl) {
       alert("Please fill all fields");
       return;
     }
@@ -107,7 +112,7 @@ const Page = () => {
         body: JSON.stringify({
           eventId,
           githubRepo,
-          teamName,
+          teamName: teamNames[eventId],
           liveUrl,
           submitedBy,
         }),
@@ -155,10 +160,12 @@ const Page = () => {
                     onEventClick={handleEventClick}
                     githubRepo={githubRepo}
                     liveUrl={liveUrl}
-                    teamName={teamName}
+                    teamName={teamNames[event._id] || ""}
                     setGithubRepo={setGithubRepo}
                     setLiveUrl={setLiveUrl}
-                    setTeamName={setTeamName}
+                    setTeamName={(name) =>
+                      setTeamNames((prev) => ({ ...prev, [event._id]: name }))
+                    }
                     isSubmitted={submittedEvents[event._id]}
                     handleSubmit={() => handleSubmit(event._id)}
                     handleDeployRedirect={handleDeployRedirect}
@@ -250,8 +257,8 @@ const EventCard = ({
             <input
               type="text"
               value={teamName}
-              onChange={(e) => setTeamName(e.target.value)}
-              className="w-full p-2 border rounded-md"
+              readOnly
+              className="w-full p-2 border rounded-md bg-gray-200"
               placeholder="Team Name"
             />
             <input

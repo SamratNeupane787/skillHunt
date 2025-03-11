@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import SubmitProject from "@/models/submitproject.model";
+import SubmitProject from "../../../Models/submitproject.model";
 import { connectMongoDB } from "@/lib/mongodb";
 
 export async function GET(request) {

@@ -82,16 +82,7 @@ const page = async () => {
                     className="bg-white shadow-lg rounded-lg p-6 hover:shadow-2xl transition duration-300"
                     key={event._id}
                   >
-                    {/* Image */}
-                    <div className="flex justify-center mb-4">
-                      <Image
-                        src="/logo.png"
-                        width={120}
-                        height={120}
-                        alt="Event Image"
-                        className="rounded-full"
-                      />
-                    </div>
+                    
 
                     {/* Event Details */}
                     <div className="text-center space-y-2">

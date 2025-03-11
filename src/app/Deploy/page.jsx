@@ -35,10 +35,11 @@ const Deploy = () => {
         socket.emit("subscribe", `logs:${projectSlug}`);
 
         // Navigate to Myevents page with repoURL and deployPreviewURL
-        window.open(
+        // Now we will ensure it opens in the same tab with query params
+        router.push(
           `/Myevents?githuburl=${encodeURIComponent(
             repoURL
-          )}&liveUrl=${encodeURIComponent(url)}`
+          )}&liveurl=${encodeURIComponent(url)}`
         );
       }
     } catch (error) {

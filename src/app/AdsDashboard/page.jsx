@@ -35,7 +35,7 @@ export default function AdsDashboard() {
       }
 
       const data = await response.json();
-      console.log("Fetched Ads Data:", data); // Log the fetched data for debugging
+      console.log("Fetched Ads Data:", data); 
       setAds(data);
     } catch (error) {
       console.error("Error fetching ads:", error);
@@ -90,7 +90,6 @@ export default function AdsDashboard() {
     }
   }
 
-  // Function to stop an ad
   async function stopAd(id) {
     const confirmation = window.confirm(
       "Are you sure you want to stop this ad?"
@@ -100,7 +99,7 @@ export default function AdsDashboard() {
     try {
       const adToStop = ads.find((ad) => ad._id === id);
       if (adToStop) {
-        adToStop.status = "stopped"; // Set the ad status to "stopped"
+        adToStop.status = "stopped"; 
 
         const response = await fetch(`${API_BASE_URL}`, {
           method: "PUT",
@@ -114,7 +113,7 @@ export default function AdsDashboard() {
         }
 
         alert("Ad stopped successfully!");
-        fetchAds(); // Refresh the list of ads
+        fetchAds(); 
       }
     } catch (error) {
       console.error("Error stopping ad:", error);
@@ -122,7 +121,6 @@ export default function AdsDashboard() {
     }
   }
 
-  // Function to start an ad (restoring from "stopped" status)
   async function startAd(id) {
     const confirmation = window.confirm(
       "Are you sure you want to start this ad?"
@@ -146,7 +144,7 @@ export default function AdsDashboard() {
         }
 
         alert("Ad started successfully!");
-        fetchAds(); // Refresh the list of ads
+        fetchAds(); 
       }
     } catch (error) {
       console.error("Error starting ad:", error);

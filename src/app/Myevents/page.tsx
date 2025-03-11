@@ -3,8 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Image from "next/image";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, MapPin } from "lucide-react";
 
 const Page = () => {
@@ -13,11 +12,11 @@ const Page = () => {
   const searchParams = useSearchParams();
 
   const [events, setEvents] = useState([]);
-  const [selectedEvent, setSelectedEvent] = useState(null); // Track selected event
-  const [githubRepo, setGithubRepo] = useState(""); // GitHub URL
-  const [liveUrl, setLiveUrl] = useState(""); // Live URL
-  const [teamName, setTeamName] = useState(""); // Team Name
-  const [submittedEvents, setSubmittedEvents] = useState({}); // Track submission for each event
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [githubRepo, setGithubRepo] = useState("");
+  const [liveUrl, setLiveUrl] = useState("");
+  const [teamName, setTeamName] = useState("");
+  const [submittedEvents, setSubmittedEvents] = useState({});
 
   useEffect(() => {
     if (status === "loading") return;
@@ -53,13 +52,20 @@ const Page = () => {
   useEffect(() => {
     const githubUrlFromParams = searchParams.get("githuburl");
     const liveUrlFromParams = searchParams.get("liveurl");
+    const teamNameFromParams = searchParams.get("teamname");
 
-    if (githubUrlFromParams && liveUrlFromParams) {
+    if (githubUrlFromParams)
       setGithubRepo(decodeURIComponent(githubUrlFromParams));
-      setLiveUrl(decodeURIComponent(liveUrlFromParams));
+    if (teamNameFromParams) setTeamName(decodeURIComponent(teamNameFromParams));
+
+    if (liveUrlFromParams) {
+      let formattedLiveUrl = decodeURIComponent(liveUrlFromParams);
+      if (!/^https?:\/\//.test(formattedLiveUrl)) {
+        formattedLiveUrl = `http://${formattedLiveUrl}`;
+      }
+      setLiveUrl(formattedLiveUrl);
     }
 
-    // Load previously submitted events from localStorage
     const storedSubmittedEvents =
       JSON.parse(localStorage.getItem("submittedEvents")) || {};
     setSubmittedEvents(storedSubmittedEvents);
@@ -70,13 +76,14 @@ const Page = () => {
     const start = new Date(startDate);
     const end = new Date(endDate);
 
+    if (isNaN(start) || isNaN(end)) return null;
     if (now < start) return "Upcoming";
     if (now >= start && now <= end) return "Happening Now";
     return "Ended";
   };
 
   const handleEventClick = (event) => {
-    setSelectedEvent(event); // Set selected event when the card is clicked
+    setSelectedEvent(event);
   };
 
   const handleDeployRedirect = (event) => {
@@ -90,7 +97,7 @@ const Page = () => {
     }
 
     try {
-      const submitedBy = session?.user?.email; 
+      const submitedBy = session?.user?.email;
 
       const response = await fetch("/api/submitprojects", {
         method: "POST",
@@ -106,21 +113,16 @@ const Page = () => {
         }),
       });
 
-      const data = await response.json();
-
       if (response.ok) {
-        // After successful submission, update UI or show message
         setSubmittedEvents((prev) => {
           const updated = { ...prev, [eventId]: true };
-
-          // Persist the submission status in localStorage
           localStorage.setItem("submittedEvents", JSON.stringify(updated));
-
           return updated;
         });
 
         alert("Project submitted successfully!");
       } else {
+        const data = await response.json();
         alert(data.message || "Something went wrong, please try again.");
       }
     } catch (error) {
@@ -136,30 +138,33 @@ const Page = () => {
       {events.length > 0 ? (
         <div className="w-full pt-8">
           <div className="mx-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {events.map((event) => {
-              const eventStatus = getEventStatus(
-                event.startDate,
-                event.endDate
-              );
-              return (
-                <EventCard
-                  key={event._id}
-                  event={event}
-                  eventStatus={eventStatus}
-                  selectedEvent={selectedEvent}
-                  onEventClick={handleEventClick} // Event card click handler
-                  githubRepo={githubRepo}
-                  liveUrl={liveUrl}
-                  teamName={teamName}
-                  setGithubRepo={setGithubRepo}
-                  setLiveUrl={setLiveUrl}
-                  setTeamName={setTeamName}
-                  isSubmitted={submittedEvents[event._id]} // Check if event is submitted
-                  handleSubmit={() => handleSubmit(event._id)} // Pass eventId to handle submission
-                  handleDeployRedirect={handleDeployRedirect}
-                />
-              );
-            })}
+            {events
+              .filter((event) => getEventStatus(event.startDate, event.endDate))
+              .map((event) => {
+                const eventStatus = getEventStatus(
+                  event.startDate,
+                  event.endDate
+                );
+
+                return (
+                  <EventCard
+                    key={event._id}
+                    event={event}
+                    eventStatus={eventStatus}
+                    selectedEvent={selectedEvent}
+                    onEventClick={handleEventClick}
+                    githubRepo={githubRepo}
+                    liveUrl={liveUrl}
+                    teamName={teamName}
+                    setGithubRepo={setGithubRepo}
+                    setLiveUrl={setLiveUrl}
+                    setTeamName={setTeamName}
+                    isSubmitted={submittedEvents[event._id]}
+                    handleSubmit={() => handleSubmit(event._id)}
+                    handleDeployRedirect={handleDeployRedirect}
+                  />
+                );
+              })}
           </div>
         </div>
       ) : (
@@ -189,9 +194,8 @@ const EventCard = ({
   return (
     <Card
       className="overflow-hidden shadow-lg transition-shadow cursor-pointer"
-      onClick={() => onEventClick(event)} // Trigger the event selection
+      onClick={() => onEventClick(event)}
     >
-     
       <CardContent className="p-6">
         <h3 className="font-semibold text-xl mb-4">{event.title}</h3>
         <div className="space-y-2 text-sm text-muted-foreground">
@@ -206,12 +210,6 @@ const EventCard = ({
           <p className="flex items-center">
             <MapPin className="mr-2 h-4 w-4" />
             {event.location}
-          </p>
-          <p className="text-xs">
-            Organized by: {event.createdBy || "Unknown"}
-          </p>
-          <p className="text-xs">
-            Description: {event.description || "No description"}
           </p>
           <p className="text-xs font-semibold">
             Status:{" "}
@@ -232,48 +230,41 @@ const EventCard = ({
         {isSelected && eventStatus === "Happening Now" && !isSubmitted && (
           <div className="mt-4 space-y-4">
             <button
-              onClick={() => handleDeployRedirect(event)} // Open /Deploy page in new tab
-              className="w-full bg-gradient-to-r from-blue-500 to-green-500 text-white py-2 rounded-md transition duration-300 shadow-md hover:from-blue-600 hover:to-green-600"
+              onClick={() => handleDeployRedirect(event)}
+              className="w-full bg-blue-500 text-white py-2 rounded-md"
             >
               Deploy Now
             </button>
-          </div>
-        )}
 
-        {isSelected && eventStatus === "Happening Now" && !isSubmitted && (
-          <div className="mt-4 space-y-4">
             <input
               type="text"
               value={githubRepo}
               onChange={(e) => setGithubRepo(e.target.value)}
-              className="w-full p-2 mb-4 border border-gray-300 rounded-md"
+              className="w-full p-2 border rounded-md"
               placeholder="GitHub repo link"
             />
             <input
               type="text"
               value={teamName}
               onChange={(e) => setTeamName(e.target.value)}
-              className="w-full p-2 mb-4 border border-gray-300 rounded-md"
+              className="w-full p-2 border rounded-md"
               placeholder="Team Name"
             />
             <input
               type="text"
               value={liveUrl}
               onChange={(e) => setLiveUrl(e.target.value)}
-              className="w-full p-2 mb-4 border border-gray-300 rounded-md"
+              className="w-full p-2 border rounded-md"
               placeholder="Live project URL"
             />
+
             <button
               onClick={handleSubmit}
-              className="w-full bg-gradient-to-r from-green-400 to-blue-500 text-white py-2 rounded-md transition duration-300 shadow-md hover:from-green-500 hover:to-blue-600"
+              className="w-full bg-green-500 text-white py-2 rounded-md"
             >
               Submit Project
             </button>
           </div>
-        )}
-
-        {isSubmitted && (
-          <p className="text-center text-green-500 mt-4">Project Submitted!</p>
         )}
       </CardContent>
     </Card>

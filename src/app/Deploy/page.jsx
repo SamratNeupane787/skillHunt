@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import io from "socket.io-client";
@@ -12,7 +12,20 @@ const Deploy = () => {
   const [loading, setLoading] = useState(false);
   const [projectId, setProjectId] = useState("");
   const [deployPreviewURL, setDeployPreviewURL] = useState("");
+  const [logs, setLogs] = useState([]);
   const router = useRouter();
+
+  useEffect(() => {
+    if (projectId) {
+      socket.on(`logs:${projectId}`, (logMessage) => {
+        setLogs((prevLogs) => [...prevLogs, logMessage]);
+      });
+
+      return () => {
+        socket.off(`logs:${projectId}`);
+      };
+    }
+  }, [projectId]);
 
   const handleClickDeploy = useCallback(async () => {
     if (!repoURL) {
@@ -21,6 +34,7 @@ const Deploy = () => {
     }
 
     setLoading(true);
+    setLogs([]); // Clear logs on new deployment
     try {
       const { data } = await axios.post(`http://localhost:9000/project`, {
         gitURL: repoURL,
@@ -34,12 +48,11 @@ const Deploy = () => {
         console.log(`Subscribing to logs:${projectSlug}`);
         socket.emit("subscribe", `logs:${projectSlug}`);
 
-        // Navigate to Myevents page with repoURL and deployPreviewURL
-        // Now we will ensure it opens in the same tab with query params
-        router.push(
+        window.open(
           `/Myevents?githuburl=${encodeURIComponent(
             repoURL
-          )}&liveurl=${encodeURIComponent(url)}`
+          )}&liveurl=${encodeURIComponent(url)}`,
+          "_blank"
         );
       }
     } catch (error) {
@@ -96,6 +109,18 @@ const Deploy = () => {
             "Deploy"
           )}
         </button>
+
+        {/* Log Section */}
+        <div className="mt-6 p-4 bg-black/30 rounded-lg max-h-64 overflow-auto">
+          <h2 className="text-lg font-semibold mb-2">Deployment Logs:</h2>
+          <div className="text-xs text-gray-300 space-y-1">
+            {logs.length > 0 ? (
+              logs.map((log, index) => <p key={index}>🔹 {log}</p>)
+            ) : (
+              <p>No logs available</p>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

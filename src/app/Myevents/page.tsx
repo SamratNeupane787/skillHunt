@@ -89,15 +89,46 @@ const Page = () => {
       return;
     }
 
-    // Mark the event as submitted
-    setSubmittedEvents((prev) => {
-      const updated = { ...prev, [eventId]: true };
+    try {
+      const submitedBy = session?.user?.email; 
 
-      // Persist the submission status in localStorage
-      localStorage.setItem("submittedEvents", JSON.stringify(updated));
+      const response = await fetch("/api/submitprojects", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          eventId,
+          githubRepo,
+          teamName,
+          liveUrl,
+          submitedBy,
+        }),
+      });
 
-      return updated;
-    });
+      const data = await response.json();
+
+      if (response.ok) {
+        // After successful submission, update UI or show message
+        setSubmittedEvents((prev) => {
+          const updated = { ...prev, [eventId]: true };
+
+          // Persist the submission status in localStorage
+          localStorage.setItem("submittedEvents", JSON.stringify(updated));
+
+          return updated;
+        });
+
+        alert("Project submitted successfully!");
+      } else {
+        alert(data.message || "Something went wrong, please try again.");
+      }
+    } catch (error) {
+      console.error("Error submitting project:", error);
+      alert(
+        "There was an error submitting the project. Please try again later."
+      );
+    }
   };
 
   return (
@@ -160,15 +191,7 @@ const EventCard = ({
       className="overflow-hidden shadow-lg transition-shadow cursor-pointer"
       onClick={() => onEventClick(event)} // Trigger the event selection
     >
-      <CardHeader className="p-0">
-        <Image
-          src="/placeholder.png"
-          alt={event.title || "Event Image"}
-          width={400}
-          height={200}
-          className="w-full h-48 object-cover"
-        />
-      </CardHeader>
+     
       <CardContent className="p-6">
         <h3 className="font-semibold text-xl mb-4">{event.title}</h3>
         <div className="space-y-2 text-sm text-muted-foreground">

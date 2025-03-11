@@ -134,7 +134,7 @@ const Page = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+    <div className="flex flex-col items-center min-h-screen bg-gray-100 p-4">
       {events.length > 0 ? (
         <div className="w-full pt-8">
           <div className="mx-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -210,6 +210,10 @@ const EventCard = ({
           <p className="flex items-center">
             <MapPin className="mr-2 h-4 w-4" />
             {event.location}
+          </p>
+          <p className="flex items-center">
+            <MapPin className="mr-2 h-4 w-4" />
+            {event.description}
           </p>
           <p className="text-xs font-semibold">
             Status:{" "}

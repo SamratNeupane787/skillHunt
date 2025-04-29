@@ -14,54 +14,38 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 
-// interface EsewaConfig {
-//   tax_amount: number;
-//   total_amount: number;
-//   transaction_uuid: string;
-//   product_code: string;
-//   product_service_charge: number;
-//   product_delivery_charge: number;
-//   success_url: string;
-//   failure_url: string;
-//   signed_field_names: string;
-//   signature: string;
-// }
-
-// interface PaymentResponse {
-//   amount: string;
-//   esewaConfig: EsewaConfig;
-// }
-
 export default function EsewaPayment() {
-  const [amount, setAmount] = useState() ;
+  const [amount, setAmount] = useState();
   const [productName, setProductName] = useState();
   const [transactionId, setTransactionId] = useState();
   const [isLoading, setIsLoading] = useState();
   const [error, setError] = useState();
   const { toast } = useToast();
 
-   useEffect(() => {
-     // Set a random transaction ID only once when the component mounts
-     setTransactionId(Math.floor(Math.random() * 1000000) + 1);
-   }, []);
-    useEffect(() => {
-      const fetchDummyData = async () => {
-        try {
-          const response = await fetch("/api/dummy-data?method=khalti");
-          if (!response.ok) {
-            throw new Error("Failed to fetch dummy data");
-          }
-          const data = await response.json();
-          setAmount(data.amount);
-          setProductName(data.productName);
-          setTransactionId(data.transactionId);
-        } catch (error) {
-          console.error("Error fetching dummy data:", error);
-        }
-      };
+  useEffect(() => {
+    // Set a random transaction ID only once when the component mounts
+    setTransactionId(Math.floor(Math.random() * 1000000) + 1);
+  }, []);
 
-      fetchDummyData();
-    }, []);
+  useEffect(() => {
+    const fetchDummyData = async () => {
+      try {
+        const response = await fetch("/api/dummy-data?method=khalti");
+        if (!response.ok) {
+          throw new Error("Failed to fetch dummy data");
+        }
+        const data = await response.json();
+        setAmount(data.amount);
+        setProductName(data.productName);
+        setTransactionId(data.transactionId);
+      } catch (error) {
+        console.error("Error fetching dummy data:", error);
+      }
+    };
+
+    fetchDummyData();
+  }, []);
+
   const handlePayment = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -81,7 +65,7 @@ export default function EsewaPayment() {
         }),
       });
 
-      console.log(response)
+      console.log(response);
       if (!response.ok) {
         throw new Error(`Payment initiation failed: ${response.statusText}`);
       }
@@ -143,7 +127,7 @@ export default function EsewaPayment() {
         <CardHeader>
           <CardTitle>eSewa Payment</CardTitle>
           <CardDescription>
-            Enter payment details for eSewa "Rs 50 per day"
+            Enter payment details for eSewa &quot;Rs 50 per day&quot;
           </CardDescription>
         </CardHeader>
         <form onSubmit={handlePayment}>

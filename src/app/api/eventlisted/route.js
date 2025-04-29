@@ -1,7 +1,5 @@
 import CompanyEvent from "../../../Models/event.model";
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { options } from "../auth/[...nextauth]/options";
 
 export const GET = async (req) => {
   try {
@@ -12,7 +10,9 @@ export const GET = async (req) => {
 
     let eventsListed;
     if (eventId) {
-      eventsListed = await CompanyEvent.findById(eventId);
+      eventsListed = await CompanyEvent.findById(eventId).sort({
+        createdAtL: -1,
+      });
       if (!eventsListed) {
         return new NextResponse(
           JSON.stringify({ message: "Event not found!" }),
@@ -22,11 +22,13 @@ export const GET = async (req) => {
     } else if (useremail) {
       eventsListed = await CompanyEvent.find({ email: useremail })
         .sort({ createdAt: -1 })
-        .limit(6);
+        .limit(20);
 
       console.log(eventsListed);
     } else {
-      eventsListed = await CompanyEvent.find().sort({ createdAt: -1 }).limit(6);
+      eventsListed = await CompanyEvent.find()
+        .sort({ createdAt: -1 })
+        .limit(20);
     }
     return new NextResponse(JSON.stringify(eventsListed), { status: 200 });
   } catch (error) {
@@ -37,3 +39,9 @@ export const GET = async (req) => {
     );
   }
 };
+
+export async function DELETE(request) {
+  const id = request.nextUrl.searchParams.get("id");
+  await CompanyEvent.findByIdAndDelete(id);
+  return NextResponse.json({ message: "Event deleted" }, { status: 200 });
+}

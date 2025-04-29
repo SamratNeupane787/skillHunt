@@ -3,17 +3,70 @@ import AdsCreate from "../../../Models/ads.model";
 import { connectMongoDB } from "../../../lib/mongodb";
 import { NextResponse } from "next/server";
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+export async function GET(request) {
+  try {
+    await connectMongoDB();
+    const ads = await AdsCreate.find().sort({ createdAt: -1 });
+    return NextResponse.json(ads, { status: 200 });
+  } catch (error) {
+    return NextResponse.json(
+      { message: "Error fetching ads" },
+      { status: 500 }
+    );
+  }
+}
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+export async function PUT(request) {
+  try {
+    const body = await request.json();
+    const { id, status } = body;
+
+    await connectMongoDB();
+
+    const updatedAd = await AdsCreate.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
+    );
+
+    if (!updatedAd) {
+      return NextResponse.json({ message: "Ad not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(
+      { message: "Ad updated successfully", ad: updatedAd },
+      { status: 200 }
+    );
+  } catch (error) {
+    return NextResponse.json({ message: "Error updating ad" }, { status: 500 });
+  }
+}
+
+export async function DELETE(request) {
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+
+  if (!id) {
+    return NextResponse.json({ message: "Ad ID is required" }, { status: 400 });
+  }
+
+  try {
+    await connectMongoDB();
+    const deletedAd = await AdsCreate.findByIdAndDelete(id);
+
+    if (!deletedAd) {
+      return NextResponse.json({ message: "Ad not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(
+      { message: "Ad deleted successfully" },
+      { status: 200 }
+    );
+  } catch (error) {
+    return NextResponse.json({ message: "Error deleting ad" }, { status: 500 });
+  }
+}
+
 
 export async function POST(request) {
   try {
@@ -24,6 +77,7 @@ export async function POST(request) {
     const location = form.get("location");
     const image = form.get("image");
     const createdBy = form.get("createdBy");
+
     if (!title || !description || !date || !location || !image || !createdBy) {
       return NextResponse.json(
         { message: "All fields are required" },
@@ -39,6 +93,7 @@ export async function POST(request) {
       date,
       createdBy,
     });
+
     if (adsExist) {
       return NextResponse.json(
         { message: "Ad already exists" },
@@ -47,11 +102,8 @@ export async function POST(request) {
     }
 
     const fileBuffer = await image.arrayBuffer();
-    const uploadedImage = await cloudinary.uploader.upload_stream({
-      folder: "ads",
-    });
 
-    const uploadPromise = new Promise((resolve, reject) => {
+    const uploadResult = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         { folder: "ads" },
         (error, result) => {
@@ -62,9 +114,24 @@ export async function POST(request) {
       stream.end(Buffer.from(fileBuffer));
     });
 
-    const uploadedResult = await uploadPromise;
+    const moderationResult = await cloudinary.api.resources({
+      public_ids: [uploadResult.public_id],
+      moderation: "web",
+    });
 
-    console.log(uploadedResult);
+    if (
+      moderationResult.resources &&
+      moderationResult.resources[0].moderation
+    ) {
+      const moderationStatus =
+        moderationResult.resources[0].moderation[0].status;
+      if (moderationStatus === "reject") {
+        return NextResponse.json(
+          { message: "Image rejected due to NSFW content." },
+          { status: 400 }
+        );
+      }
+    }
 
     const newAd = await AdsCreate.create({
       title,
@@ -72,7 +139,7 @@ export async function POST(request) {
       location,
       date,
       createdBy,
-      imagePath: uploadedResult.secure_url,
+      imagePath: uploadResult.secure_url, 
     });
 
     return NextResponse.json(

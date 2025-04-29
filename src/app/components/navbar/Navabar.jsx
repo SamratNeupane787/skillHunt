@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-
+import { Menu } from "lucide-react";
 const Navbar = () => {
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
@@ -25,7 +25,7 @@ const Navbar = () => {
           <Link href="/" className="hover:text-[#1877F2]">
             Home
           </Link>
-          <Link href="/Hackathon" className="hover:text-[#1877F2]">
+          <Link href="/Find" className="hover:text-[#1877F2]">
             Hackathon
           </Link>
           <Link href="/Company" className="hover:text-[#1877F2]">
@@ -44,8 +44,7 @@ const Navbar = () => {
 
         {/* Mobile Menu Button */}
         <div className="md:hidden">
-          <Image
-            src="/ham.png"
+          <Menu
             height={32}
             width={32}
             onClick={toggleMenu}
@@ -62,7 +61,7 @@ const Navbar = () => {
             <Link href="/" className="hover:text-[#1877F2]">
               Home
             </Link>
-            <Link href="/Hackathon" className="hover:text-[#1877F2]">
+            <Link href="/Find" className="hover:text-[#1877F2]">
               Hackathon
             </Link>
             <Link href="/Company" className="hover:text-[#1877F2]">

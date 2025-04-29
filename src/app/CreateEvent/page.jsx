@@ -18,19 +18,39 @@ import { useToast } from "@/hooks/use-toast";
 export default function CreateEvent() {
   const { toast } = useToast();
   const { data: session } = useSession();
+
   const username = session?.user?.name;
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [date, setDate] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [location, setLocation] = useState("");
+  const [categories, setCategories] = useState("software");
   const [createdBy, setCreatedBy] = useState("");
 
   const router = useRouter();
 
+  const getCurrentDateTime = () => {
+    const now = new Date();
+    const localISOTime = new Date(
+      now.getTime() - now.getTimezoneOffset() * 60000
+    )
+      .toISOString()
+      .slice(0, 16);
+    return localISOTime;
+  };
+
   const handleCreateEvent = async (e) => {
     e.preventDefault();
 
-    if (!title || !description || !location || !date) {
+    if (
+      !title ||
+      !description ||
+      !location ||
+      !startDate ||
+      !endDate ||
+      !categories
+    ) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -39,8 +59,26 @@ export default function CreateEvent() {
       return;
     }
 
+    if (new Date(startDate) < new Date()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Start date cannot be in the past",
+      });
+      return;
+    }
+
+    if (new Date(endDate) <= new Date(startDate)) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "End date must be after the start date",
+      });
+      return;
+    }
+
     try {
-      const res = await fetch("/api/event", {
+      const res = await fetch("http://localhost:3000/api/event", {
         method: "POST",
         headers: {
           "Content-type": "application/json",
@@ -50,17 +88,19 @@ export default function CreateEvent() {
           description,
           createdBy: session?.user?.name,
           location,
-          date,
+          startDate,
+          endDate,
           email: session?.user?.email,
+          categories,
         }),
       });
 
       if (res.ok) {
-        router.push("/Company");
         toast({
           title: "Success",
-          description: "Event created successfully",
+          description: "Event created successfully!",
         });
+        router.push("/Company");
       } else {
         throw new Error("Failed to create event");
       }
@@ -68,7 +108,7 @@ export default function CreateEvent() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to create event. Please try again.",
+        description: "Failed to create event",
       });
       console.error(error);
     }
@@ -109,12 +149,24 @@ export default function CreateEvent() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="date">Date</Label>
+                  <Label htmlFor="startDate">Start Date</Label>
                   <Input
-                    id="date"
+                    id="startDate"
                     type="datetime-local"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
+                    value={startDate}
+                    min={getCurrentDateTime()} 
+                    onChange={(e) => setStartDate(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="endDate">End Date</Label>
+                  <Input
+                    id="endDate"
+                    type="datetime-local"
+                    value={endDate}
+                    min={startDate || getCurrentDateTime()}
+                    onChange={(e) => setEndDate(e.target.value)}
                   />
                 </div>
 
@@ -129,6 +181,20 @@ export default function CreateEvent() {
                 </div>
 
                 <div className="space-y-2">
+                  <Label htmlFor="categories">Category</Label>
+                  <select
+                    id="categories"
+                    value={categories}
+                    onChange={(e) => setCategories(e.target.value)}
+                    className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="software">Software</option>
+                    <option value="hardware">Hardware</option>
+                    <option value="ui/ux">UI/UX</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
                   <Label htmlFor="createdBy">Organizer</Label>
                   <Input
                     id="createdBy"
@@ -139,7 +205,7 @@ export default function CreateEvent() {
                   />
                 </div>
 
-                <Button type="submit" className="w-full bg-blue-600">
+                <Button type="submit" className="w-full bg-blue-600 text-white">
                   Create Event
                 </Button>
               </form>

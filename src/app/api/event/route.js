@@ -3,8 +3,16 @@ import CompanyEvent from "../../../Models/event.model";
 import { NextResponse } from "next/server";
 
 export async function POST(request) {
-  const { title, description, date, location, createdBy, email } =
-    await request.json();
+  const {
+    title,
+    description,
+    startDate,
+    endDate,
+    location,
+    createdBy,
+    email,
+    categories,
+  } = await request.json();
 
   try {
     await connectMongoDB();
@@ -25,10 +33,12 @@ export async function POST(request) {
     await CompanyEvent.create({
       title,
       description,
-      date,
+      startDate,
+      endDate,
       location,
       createdBy,
       email,
+      categories,
     });
     return NextResponse.json(
       { message: "Event Created Successfully" },
@@ -42,9 +52,3 @@ export async function POST(request) {
   }
 }
 
-export async function DELETE(request) {
-  const id = request.nextUrl.searchParams.get("id");
-  await connectMongoDB();
-  await CompanyEvent.findByIdAndDelete(id);
-  return NextResponse.json({ message: "Event deleted" }, { status: 200 });
-}

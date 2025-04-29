@@ -17,17 +17,18 @@ const Page = () => {
   const [liveUrl, setLiveUrl] = useState("");
   const [teamNames, setTeamNames] = useState({});
   const [submittedEvents, setSubmittedEvents] = useState({});
-
+  const [userEmail, setUserEmail] = useState()
   useEffect(() => {
     if (status === "loading") return;
     if (!session || !session.user) {
       router.push("/api/auth/signin?callbackUrl=/Company");
       return;
     }
+    setUserEmail(session?.user.email)
 
     const fetchEvents = async () => {
       try {
-        const res = await fetch(`/api/eventjoin?email=${session.user.email}`, {
+        const res = await fetch(`/api/eventjoin?email=${userEmail}`, {
           cache: "no-store",
         });
         const joinedEvents = await res.json();

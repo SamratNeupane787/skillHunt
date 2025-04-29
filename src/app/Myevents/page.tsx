@@ -25,7 +25,9 @@ const Page = () => {
       router.push("/api/auth/signin?callbackUrl=/Company");
       return;
     }
-    setUserEmail(session.user.email);
+    if (session.user.email) {
+      setUserEmail(session.user.email); // Ensure email is not null or undefined
+    }
   }, [session, status, router]);
 
   useEffect(() => {

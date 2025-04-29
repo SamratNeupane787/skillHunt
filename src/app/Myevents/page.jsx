@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, MapPin } from "lucide-react";
@@ -9,8 +9,6 @@ import { Calendar, MapPin } from "lucide-react";
 const Page = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const searchParams = useSearchParams();
-
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [githubRepo, setGithubRepo] = useState("");
@@ -20,13 +18,13 @@ const Page = () => {
   const [userEmail, setUserEmail] = useState();
 
   const email = session?.user?.email || null;
+
   useEffect(() => {
     if (status === "loading") return;
     if (!session || !session.user) {
       router.push("/api/auth/signin?callbackUrl=/Company");
       return;
     }
-  
   }, [session, status, router]);
 
   useEffect(() => {
@@ -66,26 +64,6 @@ const Page = () => {
     fetchEvents();
   }, [userEmail]);
 
-  useEffect(() => {
-    const githubUrlFromParams = searchParams.get("githuburl");
-    const liveUrlFromParams = searchParams.get("liveurl");
-
-    if (githubUrlFromParams)
-      setGithubRepo(decodeURIComponent(githubUrlFromParams));
-
-    if (liveUrlFromParams) {
-      let formattedLiveUrl = decodeURIComponent(liveUrlFromParams);
-      if (!/^https?:\/\//.test(formattedLiveUrl)) {
-        formattedLiveUrl = `http://${formattedLiveUrl}`;
-      }
-      setLiveUrl(formattedLiveUrl);
-    }
-
-    const storedSubmittedEvents =
-      JSON.parse(localStorage.getItem("submittedEvents")) || {};
-    setSubmittedEvents(storedSubmittedEvents);
-  }, [searchParams]);
-
   const getEventStatus = (startDate, endDate) => {
     const now = new Date();
     const start = new Date(startDate);
@@ -95,14 +73,6 @@ const Page = () => {
     if (now < start) return "Upcoming";
     if (now >= start && now <= end) return "Happening Now";
     return "Ended";
-  };
-
-  const handleEventClick = (event) => {
-    setSelectedEvent(event);
-  };
-
-  const handleDeployRedirect = (event) => {
-    window.open(`/Deploy?eventId=${event._id}`, "_blank");
   };
 
   const handleSubmit = async (eventId) => {
@@ -152,47 +122,89 @@ const Page = () => {
     }
   };
 
-  return (
-    <div className="flex flex-col items-center min-h-screen bg-gray-100 p-4">
-      {events.length > 0 ? (
-        <div className="w-full pt-8">
-          <div className="mx-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {events
-              .filter((event) => getEventStatus(event.startDate, event.endDate))
-              .map((event) => {
-                const eventStatus = getEventStatus(
-                  event.startDate,
-                  event.endDate
-                );
+  const handleDeployRedirect = (event) => {
+    window.open(`/Deploy?eventId=${event._id}`, "_blank");
+  };
 
-                return (
-                  <EventCard
-                    key={event._id}
-                    event={event}
-                    eventStatus={eventStatus}
-                    selectedEvent={selectedEvent}
-                    onEventClick={handleEventClick}
-                    githubRepo={githubRepo}
-                    liveUrl={liveUrl}
-                    teamName={teamNames[event._id] || ""}
-                    setGithubRepo={setGithubRepo}
-                    setLiveUrl={setLiveUrl}
-                    setTeamName={(name) =>
-                      setTeamNames((prev) => ({ ...prev, [event._id]: name }))
-                    }
-                    isSubmitted={submittedEvents[event._id]}
-                    handleSubmit={() => handleSubmit(event._id)}
-                    handleDeployRedirect={handleDeployRedirect}
-                  />
-                );
-              })}
+  return (
+    <Suspense fallback={<p>Loading...</p>}>
+      <SearchParamsHandler
+        setGithubRepo={setGithubRepo}
+        setLiveUrl={setLiveUrl}
+        setSubmittedEvents={setSubmittedEvents}
+      />
+      <div className="flex flex-col items-center min-h-screen bg-gray-100 p-4">
+        {events.length > 0 ? (
+          <div className="w-full pt-8">
+            <div className="mx-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {events
+                .filter((event) =>
+                  getEventStatus(event.startDate, event.endDate)
+                )
+                .map((event) => {
+                  const eventStatus = getEventStatus(
+                    event.startDate,
+                    event.endDate
+                  );
+
+                  return (
+                    <EventCard
+                      key={event._id}
+                      event={event}
+                      eventStatus={eventStatus}
+                      selectedEvent={selectedEvent}
+                      onEventClick={setSelectedEvent}
+                      githubRepo={githubRepo}
+                      liveUrl={liveUrl}
+                      teamName={teamNames[event._id] || ""}
+                      setGithubRepo={setGithubRepo}
+                      setLiveUrl={setLiveUrl}
+                      setTeamName={(name) =>
+                        setTeamNames((prev) => ({
+                          ...prev,
+                          [event._id]: name,
+                        }))
+                      }
+                      isSubmitted={submittedEvents[event._id]}
+                      handleSubmit={() => handleSubmit(event._id)}
+                      handleDeployRedirect={handleDeployRedirect}
+                    />
+                  );
+                })}
+            </div>
           </div>
-        </div>
-      ) : (
-        <p className="text-center text-gray-500">No events found</p>
-      )}
-    </div>
+        ) : (
+          <p className="text-center text-gray-500">No events found</p>
+        )}
+      </div>
+    </Suspense>
   );
+};
+
+const SearchParamsHandler = ({ setGithubRepo, setLiveUrl, setSubmittedEvents }) => {
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const githubUrlFromParams = searchParams.get("githuburl");
+    const liveUrlFromParams = searchParams.get("liveurl");
+
+    if (githubUrlFromParams)
+      setGithubRepo(decodeURIComponent(githubUrlFromParams));
+
+    if (liveUrlFromParams) {
+      let formattedLiveUrl = decodeURIComponent(liveUrlFromParams);
+      if (!/^https?:\/\//.test(formattedLiveUrl)) {
+        formattedLiveUrl = `http://${formattedLiveUrl}`;
+      }
+      setLiveUrl(formattedLiveUrl);
+    }
+
+    const storedSubmittedEvents =
+      JSON.parse(localStorage.getItem("submittedEvents")) || {};
+    setSubmittedEvents(storedSubmittedEvents);
+  }, [searchParams, setGithubRepo, setLiveUrl, setSubmittedEvents]);
+
+  return null;
 };
 
 const EventCard = ({

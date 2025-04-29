@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { useState, useEffect } from "react";
 
 const AdPopup = ({ adData, onClose }) => {
@@ -19,7 +20,7 @@ const AdPopup = ({ adData, onClose }) => {
         >
           ×
         </button>
-        <img
+        <Image
           src={adData.imagePath}
           alt="Ad"
           className="w-full h-auto rounded-md mb-4"

@@ -17,14 +17,19 @@ const Page = () => {
   const [liveUrl, setLiveUrl] = useState("");
   const [teamNames, setTeamNames] = useState({});
   const [submittedEvents, setSubmittedEvents] = useState({});
-  const [userEmail, setUserEmail] = useState()
+  const [userEmail, setUserEmail] = useState();
+
   useEffect(() => {
     if (status === "loading") return;
     if (!session || !session.user) {
       router.push("/api/auth/signin?callbackUrl=/Company");
       return;
     }
-    setUserEmail(session?.user.email)
+    setUserEmail(session.user.email);
+  }, [session, status, router]);
+
+  useEffect(() => {
+    if (!userEmail) return;
 
     const fetchEvents = async () => {
       try {
@@ -58,7 +63,7 @@ const Page = () => {
     };
 
     fetchEvents();
-  }, [session, status, router]);
+  }, [userEmail]);
 
   useEffect(() => {
     const githubUrlFromParams = searchParams.get("githuburl");

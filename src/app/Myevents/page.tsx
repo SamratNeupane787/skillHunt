@@ -20,37 +20,40 @@ const Page = () => {
 
   useEffect(() => {
     if (status === "loading") return;
-    if (!session) {
+    if (!session || !session.user) {
       router.push("/api/auth/signin?callbackUrl=/Company");
       return;
     }
 
     const fetchEvents = async () => {
-      const res = await fetch(`/api/eventjoin?email=${session.user.email}`, {
-        cache: "no-store",
-      });
-      const joinedEvents = await res.json();
+      try {
+        const res = await fetch(`/api/eventjoin?email=${session.user.email}`, {
+          cache: "no-store",
+        });
+        const joinedEvents = await res.json();
 
-      const eventDetailsPromises = joinedEvents.map(async (event) => {
-        const eventRes = await fetch(
-          `/api/eventlisted?eventId=${event.eventId}`,
-          {
-            cache: "no-store",
-          }
-        );
-        const eventDetails = await eventRes.json();
-        return { ...event, ...eventDetails };
-      });
+        const eventDetailsPromises = joinedEvents.map(async (event) => {
+          const eventRes = await fetch(
+            `/api/eventlisted?eventId=${event.eventId}`,
+            {
+              cache: "no-store",
+            }
+          );
+          const eventDetails = await eventRes.json();
+          return { ...event, ...eventDetails };
+        });
 
-      const fetchedEvents = await Promise.all(eventDetailsPromises);
-      setEvents(fetchedEvents);
+        const fetchedEvents = await Promise.all(eventDetailsPromises);
+        setEvents(fetchedEvents);
 
-      // Autofill team names for each event
-      const teamNamesMap = {};
-      fetchedEvents.forEach((event) => {
-        teamNamesMap[event._id] = event.teamName || "";
-      });
-      setTeamNames(teamNamesMap);
+        const teamNamesMap = {};
+        fetchedEvents.forEach((event) => {
+          teamNamesMap[event._id] = event.teamName || "";
+        });
+        setTeamNames(teamNamesMap);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
     };
 
     fetchEvents();
@@ -102,7 +105,11 @@ const Page = () => {
     }
 
     try {
-      const submitedBy = session?.user?.email;
+      const submittedBy = session?.user?.email;
+      if (!submittedBy) {
+        alert("User email is missing.");
+        return;
+      }
 
       const response = await fetch("/api/submitprojects", {
         method: "POST",
@@ -114,7 +121,7 @@ const Page = () => {
           githubRepo,
           teamName: teamNames[eventId],
           liveUrl,
-          submitedBy,
+          submittedBy,
         }),
       });
 

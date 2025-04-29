@@ -19,15 +19,14 @@ const Page = () => {
   const [submittedEvents, setSubmittedEvents] = useState({});
   const [userEmail, setUserEmail] = useState();
 
+  const email = session?.user?.email || null;
   useEffect(() => {
     if (status === "loading") return;
     if (!session || !session.user) {
       router.push("/api/auth/signin?callbackUrl=/Company");
       return;
     }
-    if (session.user.email) {
-      setUserEmail(session.user.email); // Ensure email is not null or undefined
-    }
+  
   }, [session, status, router]);
 
   useEffect(() => {
@@ -35,7 +34,7 @@ const Page = () => {
 
     const fetchEvents = async () => {
       try {
-        const res = await fetch(`/api/eventjoin?email=${userEmail}`, {
+        const res = await fetch(`/api/eventjoin?email=${email}`, {
           cache: "no-store",
         });
         const joinedEvents = await res.json();

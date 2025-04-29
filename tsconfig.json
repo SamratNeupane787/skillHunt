@@ -37,7 +37,7 @@
     "src/app/api/auth/[...nextauth]/options.js",
     "src/app/api/auth/[...nextauth]/route.js",
     "src/lib/mongodb.js"
-  ],
+, "src/app/Myevents/page.jsx", "src/app/Myevents/page.jsx"  ],
   "exclude": [
     "node_modules"
   ]

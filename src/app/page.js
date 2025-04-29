@@ -30,7 +30,7 @@ export default function Home() {
             activeAds[Math.floor(Math.random() * activeAds.length)];
           setCurrentAd(randomAd);
         } else {
-          setCurrentAd(null); // If no active ads, no popup
+          setCurrentAd(null);
         }
       } catch (error) {
         console.error("Error fetching ads:", error);
